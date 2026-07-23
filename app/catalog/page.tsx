@@ -4,6 +4,7 @@ import Filter from '@/app/ui/components/filter';
 import { sellers } from '@/app/lib/placeholder-data';
 import { Product } from '@/app/lib/definitions';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 // Placeholder products for demonstration purposes
 const mockProducts: Product[] = [
@@ -55,8 +56,10 @@ export default async function CatalogPage({
       
       {/* Browser and Filters Bar */}
       <div style={{ display: 'flex', gap: '20px', marginBottom: '40px', flexWrap: 'wrap' }}>
-        <Search placeholder="Find products or sellers..." />
-        <Filter />
+        <Suspense>
+          <Search placeholder="Find products or sellers..." />
+          <Filter />
+        </Suspense>
       </div>
 
       {/* Grid Products */}

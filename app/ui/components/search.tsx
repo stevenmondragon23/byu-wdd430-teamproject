@@ -1,6 +1,7 @@
 'use client';
 
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import { Suspense } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
 export default function Search({ placeholder }: { placeholder: string }) {
@@ -26,7 +27,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
   return (
     <div style={{ flex: 1 }}>
       <label htmlFor="search" className="sr-only" style={{ display: 'none' }}>Search</label>
-      <input
+        <input
         id="search"
         type="text"
         placeholder={placeholder}
@@ -34,7 +35,8 @@ export default function Search({ placeholder }: { placeholder: string }) {
         defaultValue={searchParams.get('query')?.toString()}
         className="form-input"
         style={{ width: '100%', padding: '12px', borderRadius: '25px' }}
-      />
+        />
+
     </div>
   );
 }
