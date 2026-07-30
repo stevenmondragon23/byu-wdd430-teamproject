@@ -1,0 +1,50 @@
+.HeroSection {
+    position: relative;
+    padding: 0px;
+}
+
+.HeroSection :global(img){
+    width: 100%;
+    height: auto;
+    display: block;
+    box-shadow: 0 4px 10px rgb(219, 83, 41);
+    border-radius: 2px;
+}
+
+.HeroSection .Overlay{
+    position: absolute;
+    inset: 0; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
+
+.Overlay h1{
+    background-color: rgba(0, 255, 255, 0.884);
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+}
+
+.describeSection{
+    text-align: center;
+    margin: 20px 0px;
+}
+
+.describeSection .left{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 10px;
+    gap: 20px;
+}
+
+
+.describeSection .description{
+    padding: 20px 0;
+    align-content: center;
+}
+
+.describeSection .description h2{
+    text-decoration: underline;
+}

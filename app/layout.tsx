@@ -1,6 +1,7 @@
 import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
 import Navbar from '@/app/ui/components/navbar';
+import Footer from './ui/components/footer/footer';
 
 export const metadata = {
   title: 'Handcrafted Haven | Unique Treasures',
@@ -16,10 +17,14 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Navbar />
-        <main className="container" style={{ minHeight: '80vh', padding: '40px 20px' }}>
+        <main className="container" style={{ minHeight: '80vh', padding: '0px 20px' }}>
           {children}
         </main>
+        <Footer/>
       </body>
     </html>
   );
 }
+
+//quitado:
+// 
