@@ -7,6 +7,7 @@ export default function Page(){
             <div className={styles.HeroSection}> 
                 <Image
                     src="/landing.jpg"
+                    loading="eager"
                     alt="Hero Image"
                     width={1200}
                     height={600}

@@ -1,6 +1,6 @@
 import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
-import Navbar from '@/app/ui/components/navbar';
+import Navbar from '@/app/ui/components/navBar/navbar';
 import Footer from './ui/components/footer/footer';
 
 export const metadata = {
