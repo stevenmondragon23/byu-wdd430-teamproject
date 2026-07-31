@@ -16,7 +16,7 @@ export default function SellerProfile({ params }: { params: { id: string } }) {
     return <h2>Seller not found</h2>;
   }
 
-  const veteran = isVeteran(seller.joinedAt);
+  const veteran = isVeteran(seller.joined_at);
 
   return (
     <div className="container" style={{ marginTop: '40px' }}>
@@ -38,7 +38,7 @@ export default function SellerProfile({ params }: { params: { id: string } }) {
         </div>
 
         <div style={{ marginTop: '10px', color: '#f59e0b', fontSize: '1.2rem' }}>
-          ★ {seller.averageRating.toFixed(1)} of rating
+          ★ {seller.average_rating.toFixed(1)} of rating
         </div>
 
         <div style={{ marginTop: '20px' }}>
