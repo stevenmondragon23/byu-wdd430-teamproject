@@ -187,8 +187,7 @@ export default async function CatalogPage({
                       fontSize: '0.9rem'
                     }}
                   >
-                    ★ {product.rating || 0} (
-                    {product.review_count || 0} ratings)
+                    ★ {product.rating || 0} ({product.review_count || 0} ratings)
                   </span>
                 </div>
               </div>

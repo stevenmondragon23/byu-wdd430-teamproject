@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Navbar />
-        <main className="container" style={{ minHeight: '80vh', padding: '0px 20px' }}>
+        <main className="containerMain" style={{ minHeight: '80vh', padding: '0px 20px' }}>
           {children}
         </main>
         <Footer/>
