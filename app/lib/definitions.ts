@@ -2,8 +2,8 @@ export type Seller = {
   id: string;
   name: string;
   story: string;
-  averageRating: number;
-  joinedAt: string;
+  joined_at: string;
+  average_rating: number;
 };
 
 export type Product = {
@@ -12,9 +12,9 @@ export type Product = {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
-  imageHistory: string[];
-  createdAt: string;
+  current_image_url: string;
+  image_history: string[];
+  created_at: string;
   rating: number;
-  reviewCount: number;
+  review_count: number;
 };
