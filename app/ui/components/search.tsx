@@ -9,7 +9,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  // wait 3 seconds after the user stops typing to update the URL
+  // wait 0.5 seconds after the user stops typing to update the URL
   const handleSearch = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams);
     
@@ -22,7 +22,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
     
     // Update the URL with the new query params without refreshing the page
     replace(`${pathname}?${params.toString()}`);
-  }, 3000);
+  }, 500);
 
   return (
     <div style={{ flex: 1 }}>
