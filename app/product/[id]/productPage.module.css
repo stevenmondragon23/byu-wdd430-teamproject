@@ -4,6 +4,8 @@
 }
 
 
+
+
 .presentation{
     justify-self: center;
     align-content: center;
@@ -11,6 +13,9 @@
     gap: 20px;
     display: grid;
     grid-template-columns: 1fr auto;
+    padding: 10px;
+    background-color: #ffff;
+    border-radius: 20px;
 }
 
 
@@ -20,6 +25,29 @@
     justify-self: center;
 }
 
+.presentation .text{
+    background-color: rgba(231, 222, 220, 0.652);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 0;
+}
+
 .presentation .text p{
     font-size: large;
+    
+}
+
+.details h3{
+    text-decoration: underline;
+    align-self: center;
+}
+
+.details{
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    background-color: rgba(77, 78, 76, 0.112);
+    border-radius: 10px;
+    padding: 15px;
 }

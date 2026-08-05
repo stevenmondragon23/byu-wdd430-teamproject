@@ -52,16 +52,17 @@ export default async function producto({
         <section className={styles.text}>
           <h1>{productAnswer.product_name}</h1>
           <p>{productAnswer.description}</p>
-          <section className={styles.details}>
-            <p style={{ fontWeight: "Bold" }}>
+          <div className={styles.details}>
+            <h3>Specifications</h3>
+            <p>
               Seller:{" "}
               <a>
                 {productAnswer.users.first_name} {productAnswer.users.last_name}
               </a>
             </p>
-            <p style={{ fontWeight: "bold" }}>Price: ${productAnswer.price}</p>
+            <p>Price: ${productAnswer.price}</p>
             <p>Publish Date: {formatDate}</p>
-          </section>
+          </div>
         </section>
       </div>
     </div>
