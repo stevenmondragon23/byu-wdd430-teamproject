@@ -1,6 +1,9 @@
 import { supabase } from "@/app/lib/supabase";
 import Image from "next/image";
 import Link from "next/link";
+import styles from "@/app/product/[id]/productPage.module.css";
+import { text } from "stream/consumers";
+import { FaBold } from "react-icons/fa";
 
 export default async function producto({
   params,
@@ -14,7 +17,7 @@ export default async function producto({
     .select(
       `*,
     users(
-    username
+    *
     )`,
     )
     .eq("product_id", id)
@@ -25,21 +28,42 @@ export default async function producto({
     console.error("Product not founded", error);
   }
 
+  let formatDate = productAnswer?.created_at
+    ? new Date(productAnswer.created_at).toLocaleDateString("en-US")
+    : "Cargando...";
+
   return (
     <div>
-      <h1>{productAnswer.product_name}</h1>
-      <Image
-        src={productAnswer.image_url}
-        alt="Hola"
-        width={1200}
-        height={1000}
-        style={{
-          width: "500px",
-          height: "auto",
-          borderRadius: "10px",
-          border: "solid 2px black",
-        }}
-      />
+      <div className={styles.presentation}>
+        <Image
+          src={productAnswer.image_url}
+          alt="Hola"
+          width={1200}
+          height={1000}
+          style={{
+            width: "500px",
+            height: "500px",
+            borderRadius: "10px",
+            border: "solid 2px black",
+            objectFit: "contain",
+            backgroundColor: "#ffff",
+          }}
+        />
+        <section className={styles.text}>
+          <h1>{productAnswer.product_name}</h1>
+          <p>{productAnswer.description}</p>
+          <section className={styles.details}>
+            <p style={{ fontWeight: "Bold" }}>
+              Seller:{" "}
+              <a>
+                {productAnswer.users.first_name} {productAnswer.users.last_name}
+              </a>
+            </p>
+            <p style={{ fontWeight: "bold" }}>Price: ${productAnswer.price}</p>
+            <p>Publish Date: {formatDate}</p>
+          </section>
+        </section>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,25 @@
+:global(.containerMain) {
+    align-content: center;
+    justify-content: center;
+}
+
+
+.presentation{
+    justify-self: center;
+    align-content: center;
+    margin: 20px 0px 0px 0px;
+    gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+}
+
+
+.presentation .text h1{
+    text-decoration: underline;
+    align-self: center;
+    justify-self: center;
+}
+
+.presentation .text p{
+    font-size: large;
+}

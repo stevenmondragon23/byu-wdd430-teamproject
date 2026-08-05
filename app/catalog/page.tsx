@@ -82,7 +82,7 @@ export default async function CatalogPage({
             flexWrap: "wrap",
           }}
         >
-          <Search placeholder="Search products or sellers..." />
+          <Search placeholder="Search products..." />
           <Filter />
         </div>
       </Suspense>

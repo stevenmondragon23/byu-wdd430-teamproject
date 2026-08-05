@@ -2,8 +2,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     padding: 20px;
-    margin: 20px 0px;
-    border: solid 2px #eac3c3;
+    margin: 20px 0px 0px 0px;
+    border-top: solid 2px #131111;
     background-color: #ff3700;
 
 }

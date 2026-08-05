@@ -63,6 +63,7 @@ nav{
 
 .containerMain{
   max-width: 1200px;
+  max-height: auto;
   margin: 0 auto;
   padding: 0 20px;
 }
