@@ -1,6 +1,6 @@
-import { poppins } from '@/app/ui/fonts';
-import { signIn } from '@/auth';
-import Link from 'next/link';
+import { poppins } from "@/app/ui/fonts";
+import { signIn } from "@/auth";
+import Link from "next/link";
 
 export default function LoginPage() {
   return (
@@ -11,14 +11,20 @@ export default function LoginPage() {
             Artisan Portal
           </h1>
           <p className="auth-subtitle">
-            Sign in with your seller account to manage your Handcrafted Haven shop.
+            Sign in with your seller account to manage your Handcrafted Haven
+            shop.
           </p>
         </header>
 
         <form
           action={async (formData) => {
-            'use server';
-            await signIn('credentials', formData);
+            "use server";
+
+            await signIn("credentials", {
+              username: formData.get("username"),
+              password: formData.get("password"),
+              redirectTo: "/dashboard",
+            });
           }}
           className="auth-form"
         >

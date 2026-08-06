@@ -1,15 +1,18 @@
-'use server';
+"use server";
 
-import { supabase } from '@/app/lib/supabase';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
+import { supabase } from "@/app/lib/supabase";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+
+
 
 export async function createProduct(formData: FormData) {
-  const productName = formData.get('product_name') as string;
-  const description = formData.get('description') as string;
-  const price = Number(formData.get('price'));
-  const categoryId = Number(formData.get('category_id'));
-  const image = formData.get('image') as File;
+  const productName = formData.get("product_name") as string;
+  const description = formData.get("description") as string;
+  const price = Number(formData.get("price"));
+  const categoryId = Number(formData.get("category_id"));
+  const image = formData.get("image") as File;
 
   // Validation
   if (
@@ -19,31 +22,29 @@ export async function createProduct(formData: FormData) {
     price <= 0 ||
     isNaN(categoryId)
   ) {
-    throw new Error('Please complete all required fields.');
+    throw new Error("Please complete all required fields.");
   }
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
   if (image && image.size > MAX_FILE_SIZE) {
-    throw new Error('The image exceeds the 5MB limit.');
+    throw new Error("The image exceeds the 5MB limit.");
   }
 
-  let imageUrl = '';
+  let imageUrl = "";
 
   if (image && image.size > 0) {
     const fileName = `${Date.now()}-${image.name}`;
 
     const { error: uploadError } = await supabase.storage
-      .from('products')
+      .from("products")
       .upload(fileName, image);
 
     if (uploadError) {
       throw new Error(uploadError.message);
     }
 
-    const { data } = supabase.storage
-      .from('products')
-      .getPublicUrl(fileName);
+    const { data } = supabase.storage.from("products").getPublicUrl(fileName);
 
     imageUrl = data.publicUrl;
   }
@@ -51,22 +52,23 @@ export async function createProduct(formData: FormData) {
   // Temporal hasta implementar autenticación
   const sellerId = 1;
 
-  const { error } = await supabase
-    .from('products')
-    .insert({
-      seller_id: sellerId,
-      category_id: categoryId,
-      product_name: productName,
-      description,
-      price,
-      image_url: imageUrl
-    });
+  const { error } = await supabase.from("products").insert({
+    seller_id: sellerId,
+    category_id: categoryId,
+    product_name: productName,
+    description,
+    price,
+    image_url: imageUrl,
+  });
 
   if (error) {
     console.error(error);
     throw new Error(error.message);
   }
 
-  revalidatePath('/catalog');
-  redirect('/catalog');
+  revalidatePath("/catalog");
+  redirect("/catalog");
+
+
 }
+
