@@ -4,6 +4,7 @@ import Link from "next/link";
 import styles from "@/app/product/[id]/productPage.module.css";
 import { text } from "stream/consumers";
 import { FaBold } from "react-icons/fa";
+import { UserRating } from "@/app/ui/components/rating/StarRating";
 
 export default async function producto({
   params,
@@ -62,6 +63,7 @@ export default async function producto({
             </p>
             <p>Price: ${productAnswer.price}</p>
             <p>Publish Date: {formatDate}</p>
+            <UserRating product_id={productAnswer.product_id} />
           </div>
         </section>
       </div>
