@@ -2,8 +2,14 @@
 import { createProduct } from '@/app/lib/actions';
 import { poppins } from '@/app/ui/fonts';
 import { useState } from 'react';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 
-export default function CreateProduct() {
+export default async function CreateProduct() {
+  const session = await auth();
+  if (!session) {
+    redirect('/login');
+  }
   const [error, setError] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

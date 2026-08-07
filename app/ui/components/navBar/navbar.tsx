@@ -17,6 +17,9 @@ export default function Navbar() {
           </h2>
         </Link>
         <div className="bottomNav" style={{ display: 'flex', gap: '2px' }}>
+
+          <Link href="/dashboard/product/create" className="btn-primary">New Publication</Link>
+          
           <Link href="/catalog" className="btn-primary" >Catalog</Link>
           <Link href="/login" className="btn-primary">Login</Link>
         </div>
