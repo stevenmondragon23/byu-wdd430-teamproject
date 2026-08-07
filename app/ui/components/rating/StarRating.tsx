@@ -1,48 +1,86 @@
 "use client";
 import { useEffect, useState } from "react";
 import { getUserRating, ratingProduct } from "@/app/lib/rating";
+import Link from "next/link";
 
-type product = {
-    product_id: number;
-}
+type Props = {
+  product_id: number;
+  isLoggedIn: boolean;
+};
 
-export function UserRating( {product_id} : product  ) {
+export function UserRating({ product_id, isLoggedIn }: Props) {
   const [Stars, setStars] = useState(0);
+  const [comment, setComment] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  async function handleClick(rating: number) {
-  setStars(rating);
+  useEffect(() => {
+    if (!isLoggedIn) return;
 
-  const result = await ratingProduct(product_id, rating);
+    async function fetchRating() {
+      const result = await getUserRating(product_id);
+      if (result.success && result.data) {
+        setStars(result.data.rating);
+        setComment(result.data.comment);
+      }
+    }
+    fetchRating();
+  }, [isLoggedIn]);
 
-  if (!result.success) {
-    alert(result.message);
-    setStars(0); 
-  }
-}
+  async function handleSubmit() {
+    if (Stars === 0) {
+      alert("Please select a rating");
+      return;
+    }
 
-useEffect(() => {
-  async function fetchRating() {
-    const result = await getUserRating(product_id);
-    if (result.success) {
-      setStars(result.data);
+    setSaving(true);
+    const result = await ratingProduct(product_id, Stars, comment);
+    setSaving(false);
+
+    if (!result.success) {
+      alert(result.message);
     }
   }
-  fetchRating();
-}, []);
 
+  if (!isLoggedIn) {
+    return (
+      <p>
+        <Link href="/login">Sign in</Link> to leave a rating and review.
+      </p>
+    );
+  }
 
   return (
     <div>
-      <p> Stars: {Stars}</p>
+      <fieldset>
+        <legend>Your rating</legend>
+        {Array(5)
+          .fill(0)
+          .map((_, index) => (
+            <button
+              key={index + 1}
+              type="button"
+              aria-label={`Rate ${index + 1} star${index + 1 > 1 ? "s" : ""}`}
+              onClick={() => setStars(index + 1)}
+            >
+              {index + 1 <= Stars ? "⭐" : "☆"}
+            </button>
+          ))}
+      </fieldset>
 
-      {Array(5)
-        .fill(0)
-        .map((_, index) => (
-          <button key={index + 1} onClick={() => handleClick(index + 1)}
-          >
-            {index + 1 <= Stars ? "⭐" : "☆" }
-          </button>
-        ))}
+      <div>
+        <label htmlFor="review-comment">Your review</label>
+        <textarea
+          id="review-comment"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows={4}
+          placeholder="Share your thoughts about this product..."
+        />
+      </div>
+
+      <button type="button" onClick={handleSubmit} disabled={saving}>
+        {saving ? "Saving..." : "Submit review"}
+      </button>
     </div>
   );
 }
