@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import sql from "@/app/lib/db";
+import bcrypt from "bcryptjs";
+import { supabase } from "@/app/lib/supabase";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -11,39 +12,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
+        const username = credentials?.username as string;
+        const password = credentials?.password as string;
+
+        if (!username || !password) {
           return null;
         }
 
-        try {
-          // Query the database for the user with the provided username
-          const users = await sql`
-            SELECT user_id, username, first_name, last_name, role, password
-            FROM users
-            WHERE username = ${credentials.username as string}
-          `;
+        const { data: user, error } = await supabase
+          .from("users")
+          .select("user_id, username, first_name, last_name, role, password")
+          .eq("username", username)
+          .maybeSingle();
 
-          const user = users[0];
-
-          // Validate the user's password and role
-          if (
-            user &&
-            user.password === credentials.password &&
-            user.role === "seller"
-          ) {
-            return {
-              id: user.user_id.toString(),
-              name: `${user.first_name} ${user.last_name}`,
-              email: user.username,
-              role: user.role,
-            };
-          }
-
-          return null;
-        } catch (error) {
-          console.error("Auth Database Error:", error);
+        if (error || !user || !user.password) {
           return null;
         }
+
+        const passwordMatches = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatches) {
+          return null;
+        }
+
+        return {
+          id: user.user_id.toString(),
+          name: `${user.first_name} ${user.last_name}`,
+          email: user.username,
+          role: user.role,
+        };
       },
     }),
   ],

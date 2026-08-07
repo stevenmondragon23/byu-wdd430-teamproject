@@ -2,8 +2,8 @@ import { supabase } from "@/app/lib/supabase";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "@/app/product/[id]/productPage.module.css";
-import { text } from "stream/consumers";
-import { FaBold } from "react-icons/fa";
+import { UserRating } from "@/app/ui/components/rating/StarRating";
+import { auth } from "@/auth";
 
 export default async function producto({
   params,
@@ -11,6 +11,7 @@ export default async function producto({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await auth();
 
   const productQuery = supabase
     .from("products")
@@ -37,7 +38,7 @@ export default async function producto({
       <div className={styles.presentation}>
         <Image
           src={productAnswer.image_url}
-          alt="Hola"
+          alt={productAnswer.product_name}
           width={1200}
           height={1000}
           style={{
@@ -56,12 +57,16 @@ export default async function producto({
             <h3>Specifications</h3>
             <p>
               Seller:{" "}
-              <a>
+              <Link href={`/seller/${productAnswer.users.user_id}`}>
                 {productAnswer.users.first_name} {productAnswer.users.last_name}
-              </a>
+              </Link>
             </p>
             <p>Price: ${productAnswer.price}</p>
             <p>Publish Date: {formatDate}</p>
+            <UserRating
+              product_id={productAnswer.product_id}
+              isLoggedIn={!!session}
+            />
           </div>
         </section>
       </div>
