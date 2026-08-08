@@ -121,7 +121,6 @@ nav{
 
 .container h2{
   text-decoration: underline;
-  text-shadow: 1px 2px 10px  #0f0e0d;
 }
 
 .auth-wrapper {
@@ -260,7 +259,7 @@ nav{
   font-weight: 500;
 }
 
-/* Botón de cierre de sesión accesible */
+/* Logout Button */
 .btn-logout {
   background-color: #D9534F;
   color: #FFFFFF;
@@ -277,7 +276,7 @@ nav{
   opacity: 0.9;
 }
 
-/* Contenedores de tarjetas del Dashboard */
+/* Cards seller containers */
 .dashboard-card {
   background-color: #FFFFFF;
   border: 1px solid var(--secondary-color);
@@ -294,7 +293,7 @@ nav{
   opacity: 0.85;
 }
 
-/* Formularios del Vendedor */
+/* Seller Form */
 .story-form {
   display: flex;
   flex-direction: column;
@@ -322,7 +321,7 @@ nav{
   border: 0;
 }
 
-/* Colección de Artículos (Grid Responsivo) */
+/* Seller Collection Grid */
 .seller-collection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -387,7 +386,7 @@ nav{
   text-decoration: underline;
 }
 
-/* Responsive Ajustes para Móvil */
+/* Mobile Styles */
 @media (max-width: 600px) {
   .dashboard-card {
     padding: 1.25rem;

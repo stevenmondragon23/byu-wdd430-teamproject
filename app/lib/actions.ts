@@ -3,9 +3,8 @@
 import { supabase } from "@/app/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-
-
+import bcrypt from "bcrypt";
+import { signIn } from "@/auth";
 
 export async function createProduct(formData: FormData) {
   const productName = formData.get("product_name") as string;
@@ -14,7 +13,6 @@ export async function createProduct(formData: FormData) {
   const categoryId = Number(formData.get("category_id"));
   const image = formData.get("image") as File;
 
-  // Validation
   if (
     !productName ||
     !description ||
@@ -49,7 +47,6 @@ export async function createProduct(formData: FormData) {
     imageUrl = data.publicUrl;
   }
 
-  // Temporal hasta implementar autenticación
   const sellerId = 1;
 
   const { error } = await supabase.from("products").insert({
@@ -68,7 +65,45 @@ export async function createProduct(formData: FormData) {
 
   revalidatePath("/catalog");
   redirect("/catalog");
-
-
 }
 
+export async function createUser(formData: FormData) {
+  const username = formData.get("username") as string;
+  const password = formData.get("password") as string;
+  const firstName = formData.get("first_name") as string;
+  const lastName = formData.get("last_name") as string;
+
+  if (!username || !password || !firstName || !lastName) {
+    throw new Error("Please complete all required fields.");
+  }
+
+  const { data: existing } = await supabase
+    .from("users")
+    .select("user_id")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (existing) {
+    throw new Error("Username already taken.");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const { error } = await supabase.from("users").insert({
+    username,
+    first_name: firstName,
+    last_name: lastName,
+    role: "seller",
+    password: hashedPassword,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await signIn("credentials", {
+    username,
+    password,
+    redirectTo: "/catalog?welcome=true",
+  });
+}
