@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body className={inter.className}>
         <Navbar />
         <main className="containerMain" style={{ minHeight: '80vh', padding: '0px 20px' }}>
@@ -25,6 +25,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-//quitado:
-// 

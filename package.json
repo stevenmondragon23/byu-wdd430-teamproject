@@ -10,14 +10,17 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.109.0",
+    "bcrypt": "^6.0.0",
     "next": "16.2.10",
     "next-auth": "^5.0.0-beta.32",
+    "postgres": "^3.4.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-icons": "^5.7.0",
     "use-debounce": "^10.1.1"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
