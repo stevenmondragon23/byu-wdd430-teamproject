@@ -10,12 +10,11 @@ export const dynamic = "force-dynamic";
 export default async function CatalogPage({
   searchParams,
 }: {
-  searchParams: Promise<{ query?: string; sort?: string; welcome?: string }>;
+  searchParams: Promise<{ query?: string; sort?: string }>;
 }) {
   const resolvedParams = await searchParams;
   const query = resolvedParams?.query?.toLowerCase() || "";
   const sort = resolvedParams?.sort || "";
-  const showWelcome = resolvedParams?.welcome === "true";
 
   let queryBuilder = supabase.from("products").select(`
       *,
@@ -64,21 +63,6 @@ export default async function CatalogPage({
 
   return (
     <div className="container" style={{ marginTop: "30px" }}>
-      {showWelcome && (
-        <div
-          role="status"
-          style={{
-            backgroundColor: "var(--accent-color)",
-            color: "white",
-            padding: "12px 20px",
-            borderRadius: "10px",
-            marginBottom: "20px",
-          }}
-        >
-          Welcome back! 👋
-        </div>
-      )}
-
       <h1
         className={poppins.className}
         style={{
@@ -143,6 +127,7 @@ export default async function CatalogPage({
               </div>
 
               <div style={{ padding: "20px" }}>
+
                 <Link href={`/product/${product.product_id}`}>
                   <h3
                     className={poppins.className}

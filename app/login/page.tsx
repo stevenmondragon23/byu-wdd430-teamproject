@@ -23,7 +23,7 @@ export default function LoginPage() {
             await signIn("credentials", {
               username: formData.get("username"),
               password: formData.get("password"),
-              redirectTo: "/catalog?welcome=true",
+              redirectTo: "/dashboard",
             });
           }}
           className="auth-form"
@@ -55,14 +55,11 @@ export default function LoginPage() {
           </div>
 
           <button type="submit" className="btn-primary btn-full">
-            Sign In
+            Sign In to Dashboard
           </button>
         </form>
 
         <footer className="auth-footer">
-          <p>
-            No account? <Link href="/signup">Create one</Link>
-          </p>
           <Link href="/catalog" className="back-link">
             ← Return to Marketplace Catalog
           </Link>
