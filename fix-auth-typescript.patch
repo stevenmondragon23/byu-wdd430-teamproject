@@ -1,0 +1,370 @@
+diff --git a/app/lib/actions.ts b/app/lib/actions.ts
+index eabe70e..eca7124 100644
+--- a/app/lib/actions.ts
++++ b/app/lib/actions.ts
+@@ -3,6 +3,8 @@
+ import { supabase } from "@/app/lib/supabase";
+ import { revalidatePath } from "next/cache";
+ import { redirect } from "next/navigation";
++import bcrypt from "bcryptjs";
++import { signIn } from "@/auth";
+ 
+ 
+ 
+@@ -72,3 +74,44 @@ export async function createProduct(formData: FormData) {
+ 
+ }
+ 
++export async function createUser(formData: FormData) {
++  const username = formData.get("username") as string;
++  const password = formData.get("password") as string;
++  const firstName = formData.get("first_name") as string;
++  const lastName = formData.get("last_name") as string;
++
++  if (!username || !password || !firstName || !lastName) {
++    throw new Error("Please complete all required fields.");
++  }
++
++  const { data: existing } = await supabase
++    .from("users")
++    .select("user_id")
++    .eq("username", username)
++    .maybeSingle();
++
++  if (existing) {
++    throw new Error("Username already taken.");
++  }
++
++  const hashedPassword = await bcrypt.hash(password, 10);
++
++  const { error } = await supabase.from("users").insert({
++    username,
++    first_name: firstName,
++    last_name: lastName,
++    role: "seller",
++    password: hashedPassword,
++  });
++
++  if (error) {
++    throw new Error(error.message);
++  }
++
++  await signIn("credentials", {
++    username,
++    password,
++    redirectTo: "/catalog?welcome=true",
++  });
++}
++
+diff --git a/app/login/page.tsx b/app/login/page.tsx
+index 0e7ab48..0e1a510 100644
+--- a/app/login/page.tsx
++++ b/app/login/page.tsx
+@@ -63,6 +63,9 @@ export default function LoginPage() {
+           <Link href="/catalog" className="back-link">
+             ← Return to Marketplace Catalog
+           </Link>
++          <Link href="/signup" className="back-link">
++            Don&apos;t have an account? Sign up
++          </Link>
+         </footer>
+       </section>
+     </div>
+diff --git a/app/signup/page.tsx b/app/signup/page.tsx
+new file mode 100644
+index 0000000..dce61ad
+--- /dev/null
++++ b/app/signup/page.tsx
+@@ -0,0 +1,47 @@
++import { poppins } from "@/app/ui/fonts";
++import { createUser } from "@/app/lib/actions";
++import Link from "next/link";
++
++export default function SignupPage() {
++  return (
++    <div className="auth-wrapper">
++      <section className="auth-card" aria-labelledby="signup-title">
++        <header className="auth-header">
++          <h1 id="signup-title" className={poppins.className}>
++            Join as an Artisan
++          </h1>
++        </header>
++
++        <form action={createUser} className="auth-form">
++          <div className="form-group">
++            <label htmlFor="username">Username</label>
++            <input id="username" type="text" name="username" required className="form-input" />
++          </div>
++
++          <div className="form-group">
++            <label htmlFor="first_name">First name</label>
++            <input id="first_name" type="text" name="first_name" required className="form-input" />
++          </div>
++
++          <div className="form-group">
++            <label htmlFor="last_name">Last name</label>
++            <input id="last_name" type="text" name="last_name" required className="form-input" />
++          </div>
++
++          <div className="form-group">
++            <label htmlFor="password">Password</label>
++            <input id="password" type="password" name="password" required autoComplete="new-password" className="form-input" />
++          </div>
++
++          <button type="submit" className="btn-primary btn-full">
++            Create Account
++          </button>
++        </form>
++
++        <footer className="auth-footer">
++          <Link href="/login" className="back-link">Already have an account? Sign in</Link>
++        </footer>
++      </section>
++    </div>
++  );
++}
+\ No newline at end of file
+diff --git a/app/ui/components/navBar/newPublicationBtn.tsx b/app/ui/components/navBar/newPublicationBtn.tsx
+index 4b0e34a..c8415c6 100644
+--- a/app/ui/components/navBar/newPublicationBtn.tsx
++++ b/app/ui/components/navBar/newPublicationBtn.tsx
+@@ -13,7 +13,7 @@ export default function NewPublicationBtn() {
+     return null;
+   }
+ 
+-  if (!session || session.user.role !== "seller") {
++  if (!session?.user || session.user.role !== "seller") {
+     return null;
+   }
+ 
+diff --git a/auth.ts b/auth.ts
+index 486c939..383dbcd 100644
+--- a/auth.ts
++++ b/auth.ts
+@@ -1,41 +1,7 @@
+ import NextAuth from "next-auth";
+ import Credentials from "next-auth/providers/credentials";
+-
+-// Mock database of users for demonstration purposes
+-const usersDatabase = [
+-  {
+-    user_id: 1,
+-    username: "artisanAnna",
+-    first_name: "Anna",
+-    last_name: "Smith",
+-    role: "seller",
+-    password: "seller123",
+-  },
+-  {
+-    user_id: 2,
+-    username: "woodWorks",
+-    first_name: "Michael",
+-    last_name: "Brown",
+-    role: "seller",
+-    password: "seller123",
+-  },
+-  {
+-    user_id: 3,
+-    username: "crochetLove",
+-    first_name: "Emily",
+-    last_name: "Johnson",
+-    role: "seller",
+-    password: "seller123",
+-  },
+-  {
+-    user_id: 4,
+-    username: "john23",
+-    first_name: "John",
+-    last_name: "Davis",
+-    role: "customer",
+-    password: null,
+-  },
+-];
++import bcrypt from "bcryptjs";
++import { supabase } from "./app/lib/supabase";
+ 
+ export const { handlers, auth, signIn, signOut } = NextAuth({
+   providers: [
+@@ -46,23 +12,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
+         password: { label: "Password", type: "password" },
+       },
+       async authorize(credentials) {
+-        const user = usersDatabase.find(
+-          (u) =>
+-            u.username === credentials?.username &&
+-            u.password === credentials?.password,
++        if (!credentials?.username || !credentials?.password) {
++          return null;
++        }
++
++        // Buscamos al usuario en la tabla real de Supabase, no en un mock.
++        const { data: user, error } = await supabase
++          .from("users")
++          .select("user_id, username, first_name, last_name, role, password")
++          .eq("username", credentials.username)
++          .single();
++
++        if (error || !user || !user.password) {
++          return null;
++        }
++
++        // Comparamos la contraseña ingresada contra el hash guardado en la BD.
++        const passwordMatches = await bcrypt.compare(
++          credentials.password as string,
++          user.password,
+         );
+ 
+-        // Validate that the user is a seller before returning the user object
+-        if (user && user.role === "seller") {
+-          return {
+-            id: user.user_id.toString(),
+-            name: `${user.first_name} ${user.last_name}`,
+-            email: user.username,
+-            role: user.role,
+-          };
++        if (!passwordMatches) {
++          return null;
+         }
+ 
+-        return null;
++        return {
++          id: user.user_id.toString(),
++          name: `${user.first_name} ${user.last_name}`,
++          email: user.username,
++          role: user.role,
++        };
+       },
+     }),
+   ],
+@@ -70,15 +50,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
+   callbacks: {
+     async jwt({ token, user }) {
+       if (user) {
+-        token.role = (user as any).role;
++        token.role = user.role;
+         token.id = user.id;
+       }
+       return token;
+     },
+     async session({ session, token }) {
+       if (token && session.user) {
+-        (session.user as any).role = token.role;
+-        (session.user as any).id = token.id;
++        session.user.role = token.role;
++        session.user.id = token.id as string;
+       }
+       return session;
+     },
+diff --git a/package-lock.json b/package-lock.json
+index 27447a1..60752ea 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -9,6 +9,7 @@
+       "version": "0.1.0",
+       "dependencies": {
+         "@supabase/supabase-js": "^2.109.0",
++        "bcryptjs": "^3.0.3",
+         "next": "16.2.10",
+         "next-auth": "^5.0.0-beta.32",
+         "react": "19.2.4",
+@@ -17,6 +18,7 @@
+         "use-debounce": "^10.1.1"
+       },
+       "devDependencies": {
++        "@types/bcryptjs": "^2.4.6",
+         "@types/node": "^20",
+         "@types/react": "^19",
+         "@types/react-dom": "^19",
+@@ -1385,6 +1387,13 @@
+         "tslib": "^2.4.0"
+       }
+     },
++    "node_modules/@types/bcryptjs": {
++      "version": "2.4.6",
++      "resolved": "https://registry.npmjs.org/@types/bcryptjs/-/bcryptjs-2.4.6.tgz",
++      "integrity": "sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/@types/estree": {
+       "version": "1.0.9",
+       "resolved": "https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz",
+@@ -2370,6 +2379,15 @@
+         "node": ">=6.0.0"
+       }
+     },
++    "node_modules/bcryptjs": {
++      "version": "3.0.3",
++      "resolved": "https://registry.npmjs.org/bcryptjs/-/bcryptjs-3.0.3.tgz",
++      "integrity": "sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==",
++      "license": "BSD-3-Clause",
++      "bin": {
++        "bcrypt": "bin/bcrypt"
++      }
++    },
+     "node_modules/brace-expansion": {
+       "version": "1.1.16",
+       "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.16.tgz",
+diff --git a/package.json b/package.json
+index a14b706..17a291f 100644
+--- a/package.json
++++ b/package.json
+@@ -10,6 +10,7 @@
+   },
+   "dependencies": {
+     "@supabase/supabase-js": "^2.109.0",
++    "bcryptjs": "^3.0.3",
+     "next": "16.2.10",
+     "next-auth": "^5.0.0-beta.32",
+     "react": "19.2.4",
+@@ -18,6 +19,7 @@
+     "use-debounce": "^10.1.1"
+   },
+   "devDependencies": {
++    "@types/bcryptjs": "^2.4.6",
+     "@types/node": "^20",
+     "@types/react": "^19",
+     "@types/react-dom": "^19",
+diff --git a/types/next-auth.d.ts b/types/next-auth.d.ts
+new file mode 100644
+index 0000000..bb51c6a
+--- /dev/null
++++ b/types/next-auth.d.ts
+@@ -0,0 +1,37 @@
++import { DefaultSession } from "next-auth";
++
++// Este archivo le "enseña" a TypeScript que nuestros usuarios
++// tienen un campo extra llamado `role`, que NextAuth no trae
++// por defecto. Con esto, ya no hace falta usar `as any` en
++// ningún archivo del proyecto: TypeScript sabrá que existe
++// en todos lados (session.user.role, token.role, etc).
++
++declare module "next-auth" {
++  interface User {
++    role?: string;
++  }
++
++  interface Session {
++    user: {
++      role?: string;
++    } & DefaultSession["user"];
++  }
++}
++
++declare module "next-auth/jwt" {
++  interface JWT {
++    role?: string;
++    id?: string;
++  }
++}
++
++// next-auth/jwt solo re-exporta lo que declara @auth/core/jwt.
++// Por eso hay que "enseñarle" el campo también aquí: los
++// callbacks internos (como `session`) usan este tipo directamente,
++// no el re-export.
++declare module "@auth/core/jwt" {
++  interface JWT {
++    role?: string;
++    id?: string;
++  }
++}

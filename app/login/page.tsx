@@ -63,6 +63,9 @@ export default function LoginPage() {
           <Link href="/catalog" className="back-link">
             ← Return to Marketplace Catalog
           </Link>
+          <Link href="/signup" className="back-link">
+            Don&apos;t have an account? Sign up
+          </Link>
         </footer>
       </section>
     </div>
