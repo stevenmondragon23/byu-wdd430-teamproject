@@ -1,52 +1,113 @@
-.HeroSection {
-    position: relative;
-    padding: 0px;
+.heroSection {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 }
 
-.HeroSection :global(img){
-    width: 100%;
-    height: auto;
-    display: block;
-    box-shadow: 0 4px 10px rgb(219, 83, 41);
-    border-radius: 2px;
+.heroImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  box-shadow: var(--shadow-md);
 }
 
-.HeroSection .Overlay{
-    position: absolute;
-    inset: 0; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: x-large;
-    text-decoration: solid;
-    
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.Overlay h1{
-    background-color: rgba(0, 255, 255, 0.884);
-    width: 100%;
+.overlay h1 {
+  width: 100%;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background-color: rgba(46, 46, 46, 0.72);
+  color: #ffffff;
+  font-size: clamp(1.7rem, 5vw, 3rem);
+  text-align: center;
+}
+
+.describeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  padding: 3rem 0;
+}
+
+.left {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
+}
+
+.description {
+  padding: 1rem;
+}
+
+.description h2 {
+  margin-bottom: 0.75rem;
+  text-decoration: underline;
+}
+
+.description p {
+  max-width: 65ch;
+  margin: 0;
+  line-height: 1.7;
+}
+
+.descriptionRight {
+  text-align: right;
+}
+
+.descriptionLeft {
+  text-align: left;
+}
+
+.sectionImage {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  margin: 0 auto;
+  border: 2px solid #222222;
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  .describeSection {
+    gap: 2rem;
+    padding: 2rem 0;
+  }
+
+  .left {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .description,
+  .descriptionRight,
+  .descriptionLeft {
     text-align: center;
-    padding: 10px;
+  }
+
+  .left:nth-child(2) .description {
+    order: 1;
+  }
+
+  .left:nth-child(2) .sectionImage {
+    order: 2;
+  }
 }
 
-.describeSection{
-    text-align: center;
-    margin: 20px 0px;
-}
+@media (max-width: 480px) {
+  .overlay h1 {
+    padding: 0.5rem;
+  }
 
-.describeSection .left{
-    display: grid;
-    grid-template-columns: 1fr auto;
-    padding: 10px;
-    gap: 20px;
-}
-
-
-.describeSection .description{
-    padding: 20px 0;
-    align-content: center;
-}
-
-.describeSection .description h2{
-    text-decoration: underline;
+  .description {
+    padding: 0.5rem;
+  }
 }

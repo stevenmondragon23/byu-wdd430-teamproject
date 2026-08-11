@@ -1,0 +1,151 @@
+.rating {
+  width: 100%;
+}
+
+.fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.stars {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.starButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.starButton:hover {
+  transform: scale(1.08);
+  background-color: rgba(255, 193, 7, 0.12);
+}
+
+.starButton:focus-visible {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+}
+
+.starButton:active {
+  transform: scale(0.95);
+}
+
+.commentContainer {
+  margin-top: 1rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 0.75rem;
+  border: 1px solid #777;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #222;
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  outline: 3px solid rgba(0, 95, 204, 0.3);
+  border-color: #005fcc;
+}
+
+.submitButton {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  background-color: #222;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #444;
+}
+
+.submitButton:focus-visible {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+}
+
+.submitButton:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.message {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.success {
+  background-color: rgba(25, 135, 84, 0.12);
+  border: 1px solid rgba(25, 135, 84, 0.35);
+}
+
+.error {
+  background-color: rgba(220, 53, 69, 0.12);
+  border: 1px solid rgba(220, 53, 69, 0.35);
+}
+
+.loginMessage {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.loginMessage a {
+  font-weight: 700;
+}
+
+@media (max-width: 400px) {
+  .starButton {
+    width: 2.4rem;
+    height: 2.4rem;
+    font-size: 1.5rem;
+  }
+}

@@ -1,42 +1,47 @@
-'use client';
+"use client";
 
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
-import { Suspense } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
+import {
+  useSearchParams,
+  usePathname,
+  useRouter,
+} from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
 
-export default function Search({ placeholder }: { placeholder: string }) {
+export default function Search({
+  placeholder,
+}: {
+  placeholder: string;
+}) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  // wait 0.5 seconds after the user stops typing to update the URL
   const handleSearch = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams);
-    
-    // if the term is not empty, set the query param, otherwise remove it
+
     if (term) {
-      params.set('query', term);
+      params.set("query", term);
     } else {
-      params.delete('query');
+      params.delete("query");
     }
-    
-    // Update the URL with the new query params without refreshing the page
+
     replace(`${pathname}?${params.toString()}`);
   }, 500);
 
   return (
-    <div style={{ flex: 1 }}>
-      <label htmlFor="search" className="sr-only" style={{ display: 'none' }}>Search</label>
-        <input
+    <div className="search-wrapper">
+      <label htmlFor="search" className="sr-only">
+        Search products
+      </label>
+
+      <input
         id="search"
-        type="text"
+        type="search"
         placeholder={placeholder}
         onChange={(e) => handleSearch(e.target.value)}
-        defaultValue={searchParams.get('query')?.toString()}
+        defaultValue={searchParams.get("query")?.toString()}
         className="form-input"
-        style={{ width: '100%', padding: '12px', borderRadius: '25px' }}
-        />
-
+      />
     </div>
   );
 }

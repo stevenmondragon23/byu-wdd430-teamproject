@@ -1,11 +1,12 @@
-import '@/app/ui/global.css';
-import { inter } from '@/app/ui/fonts';
-import Navbar from '@/app/ui/components/navBar/navbar';
-import Footer from './ui/components/footer/footer';
+import "@/app/ui/global.css";
+import { inter } from "@/app/ui/fonts";
+import Navbar from "@/app/ui/components/navBar/navbar";
+import Footer from "./ui/components/footer/footer";
 
 export const metadata = {
-  title: 'Handcrafted Haven | Unique Treasures',
-  description: 'A platform for artisans and crafters to showcase handcrafted items.',
+  title: "Handcrafted Haven | Unique Treasures",
+  description:
+    "A platform for artisans and crafters to showcase handcrafted items.",
 };
 
 export default function RootLayout({
@@ -17,10 +18,8 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth">
       <body className={inter.className}>
         <Navbar />
-        <main className="containerMain" style={{ minHeight: '80vh', padding: '0px 20px' }}>
-          {children}
-        </main>
-        <Footer/>
+        <main className="containerMain">{children}</main>
+        <Footer />
       </body>
     </html>
   );
