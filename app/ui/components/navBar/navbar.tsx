@@ -1,29 +1,59 @@
-import Link from 'next/link';
-import { poppins } from '@/app/ui/fonts';
+import Link from "next/link";
+import { poppins } from "@/app/ui/fonts";
+import { auth, signOut } from "@/auth";
+import MobileMenu from "@/app/ui/components/navBar/mobile-menu";
 
+export default async function Navbar() {
+  const session = await auth();
 
-export default function Navbar() {
   return (
-    <nav   style={{ padding: '20px 0', borderBottom: '4px solid var(--text-color)' }}>
-      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {/* Use Next/Link for navigation without page reload */}
-        <Link href="/">
-          <h2 className={poppins.className} style={{ 
-            margin: 3, 
-            color: 'var(--background-color)' 
-            
-            }}>
+    <nav className="site-nav">
+      <div className="container nav-inner">
+        <Link href="/" className="nav-brand">
+          <h2 className={`${poppins.className} nav-brand-title`}>
             Handcrafted Haven
           </h2>
         </Link>
-        <div className="bottomNav" style={{ display: 'flex', gap: '2px' }}>
 
-          <Link href="/dashboard/product/create" className="btn-primary">New Publication</Link>
-          
-          <Link href="/catalog" className="btn-primary" >Catalog</Link>
-          <Link href="/login" className="btn-primary">Login</Link>
-        </div>
+        <MobileMenu>
+          <Link href="/catalog" className="btn-primary">
+            Catalog
+          </Link>
+
+          {session?.user ? (
+            <>
+              <Link
+                href="/dashboard/product/create"
+                className="btn-primary"
+              >
+                New Publication
+              </Link>
+
+              <form
+                action={async () => {
+                  "use server";
+
+                  await signOut({
+                    redirectTo: "/catalog",
+                  });
+                }}
+              >
+                <button
+                  type="submit"
+                  className="btn-primary btn-logout"
+                >
+                  Log out
+                </button>
+              </form>
+            </>
+          ) : (
+            <Link href="/login" className="btn-primary">
+              Login
+            </Link>
+          )}
+        </MobileMenu>
       </div>
     </nav>
   );
 }
+

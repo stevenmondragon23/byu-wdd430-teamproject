@@ -17,14 +17,15 @@ export default async function producto({
     .from("products")
     .select(
       `*,
-    users(
-    *
-    )`,
+      users(
+        *
+      )`,
     )
     .eq("product_id", id)
     .single();
 
   const { data: productAnswer, error } = await productQuery;
+
   if (error) {
     console.error("Product not founded", error);
   }
@@ -34,42 +35,53 @@ export default async function producto({
     : "Cargando...";
 
   return (
-    <div>
+    <main className={styles.productPage}>
       <div className={styles.presentation}>
-        <Image
-          src={productAnswer.image_url}
-          alt={productAnswer.product_name}
-          width={1200}
-          height={1000}
-          style={{
-            width: "500px",
-            height: "500px",
-            borderRadius: "10px",
-            border: "solid 2px black",
-            objectFit: "contain",
-            backgroundColor: "#ffff",
-          }}
-        />
+        <div className={styles.imageContainer}>
+          <Image
+            src={productAnswer.image_url}
+            alt={productAnswer.product_name}
+            width={1200}
+            height={1000}
+            className={styles.productImage}
+          />
+        </div>
+
         <section className={styles.text}>
           <h1>{productAnswer.product_name}</h1>
-          <p>{productAnswer.description}</p>
+
+          <p className={styles.description}>
+            {productAnswer.description}
+          </p>
+
           <div className={styles.details}>
-            <h3>Specifications</h3>
+            <h2>Specifications</h2>
+
             <p>
-              Seller:{" "}
+              <strong>Seller:</strong>{" "}
               <Link href={`/seller/${productAnswer.users.user_id}`}>
-                {productAnswer.users.first_name} {productAnswer.users.last_name}
+                {productAnswer.users.first_name}{" "}
+                {productAnswer.users.last_name}
               </Link>
             </p>
-            <p>Price: ${productAnswer.price}</p>
-            <p>Publish Date: {formatDate}</p>
-            <UserRating
-              product_id={productAnswer.product_id}
-              isLoggedIn={!!session}
-            />
+
+            <p>
+              <strong>Price:</strong> ${productAnswer.price}
+            </p>
+
+            <p>
+              <strong>Publish Date:</strong> {formatDate}
+            </p>
+
+            <div className={styles.ratingSection}>
+              <UserRating
+                product_id={productAnswer.product_id}
+                isLoggedIn={!!session}
+              />
+            </div>
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }

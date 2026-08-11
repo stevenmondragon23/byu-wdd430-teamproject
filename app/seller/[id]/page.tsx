@@ -1,6 +1,6 @@
-import { sellers } from '@/app/lib/placeholder-data';
-import { poppins } from '@/app/ui/fonts';
-import { Seller } from '@/app/lib/definitions';
+import { sellers } from "@/app/lib/placeholder-data";
+import { poppins } from "@/app/ui/fonts";
+import { Seller } from "@/app/lib/definitions";
 
 function isVeteran(joinedDateStr: string) {
   const joinedDate = new Date(joinedDateStr);
@@ -19,30 +19,26 @@ export default function SellerProfile({ params }: { params: { id: string } }) {
   const veteran = isVeteran(seller.joined_at);
 
   return (
-    <div className="container" style={{ marginTop: '40px' }}>
-      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '15px', border: '1px solid var(--secondary-color)' }}>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <h1 className={poppins.className} style={{ margin: 0 }}>{seller.name}</h1>
-          
-          <span style={{
-            backgroundColor: veteran ? '#3b82f6' : 'var(--accent-color)',
-            color: 'white',
-            padding: '5px 12px',
-            borderRadius: '15px',
-            fontSize: '0.8rem',
-            fontWeight: 'bold'
-          }}>
-            {veteran ? 'Verified Seller' : 'New Seller'}
+    <div className="container seller-profile">
+      <div className="seller-card">
+        <div className="seller-heading">
+          <h1 className={`${poppins.className} seller-name`}>{seller.name}</h1>
+
+          <span
+            className={`seller-badge ${
+              veteran ? "seller-badge-verified" : "seller-badge-new"
+            }`}
+          >
+            {veteran ? "Verified Seller" : "New Seller"}
           </span>
         </div>
 
-        <div style={{ marginTop: '10px', color: '#f59e0b', fontSize: '1.2rem' }}>
+        <div className="seller-rating">
           ★ {seller.average_rating.toFixed(1)} of rating
         </div>
 
-        <div style={{ marginTop: '20px' }}>
-          <h3 className={poppins.className} style={{ color: 'var(--primary-color)' }}>My History</h3>
+        <div className="seller-history">
+          <h3 className={poppins.className}>My History</h3>
           <p>{seller.story}</p>
         </div>
       </div>

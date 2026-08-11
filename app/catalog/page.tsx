@@ -2,7 +2,9 @@ import { Suspense } from "react";
 import { poppins } from "@/app/ui/fonts";
 import Search from "@/app/ui/components/search";
 import Filter from "@/app/ui/components/filter";
+import WelcomeMessage from "@/app/ui/components/welcome-message";
 import { supabase } from "@/app/lib/supabase";
+import { auth } from "@/auth";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -10,11 +12,24 @@ export const dynamic = "force-dynamic";
 export default async function CatalogPage({
   searchParams,
 }: {
-  searchParams: Promise<{ query?: string; sort?: string }>;
+  searchParams: Promise<{
+    query?: string;
+    sort?: string;
+    welcome?: string;
+  }>;
 }) {
   const resolvedParams = await searchParams;
   const query = resolvedParams?.query?.toLowerCase() || "";
   const sort = resolvedParams?.sort || "";
+
+  const session = await auth();
+
+  const welcomeType =
+    resolvedParams?.welcome === "true"
+      ? "welcome"
+      : resolvedParams?.welcome === "back"
+        ? "back"
+        : null;
 
   let queryBuilder = supabase.from("products").select(`
       *,
@@ -31,6 +46,7 @@ export default async function CatalogPage({
   }
 
   let { data: products, error } = await queryBuilder;
+
   if (error) {
     console.error("Error fetching products:", error);
   }
@@ -72,6 +88,13 @@ export default async function CatalogPage({
       >
         Handcrafted Marketplace
       </h1>
+
+      {welcomeType && session?.user?.name && (
+        <WelcomeMessage
+          type={welcomeType}
+          name={session.user.name.split(" ")[0]}
+        />
+      )}
 
       <Suspense fallback={<div>Loading...</div>}>
         <div
@@ -127,7 +150,6 @@ export default async function CatalogPage({
               </div>
 
               <div style={{ padding: "20px" }}>
-
                 <Link href={`/product/${product.product_id}`}>
                   <h3
                     className={poppins.className}
@@ -185,3 +207,4 @@ export default async function CatalogPage({
     </div>
   );
 }
+

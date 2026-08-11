@@ -1,41 +1,64 @@
-.footPart{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 20px;
-    margin: 20px 0px 0px 0px;
-    border-top: solid 2px #131111;
-    background-color: #ff3700;
-
+.footPart {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 2rem;
+  padding: 2rem 1.25rem;
+  border-top: 2px solid var(--primary-color);
+  background-color: var(--primary-color);
 }
 
-.footerInfo{
-    display: grid;
-    grid-template-columns: auto auto auto;
-    color: white; 
-    justify-content: center;
-    text-align: left;
+.footerInfo {
+  display: flex;
+  justify-content: center;
+  color: #ffffff;
+  text-align: center;
 }
 
-.brand p{
-    font-style: italic;
+.brand {
+  max-width: 500px;
 }
 
-
-.IconsBar{
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
+.brand p {
+  margin: 0.5rem 0;
 }
 
-.social{
-    align-items: center;
+.brand p:first-child {
+  font-style: italic;
 }
 
-.social .icon{
-    background-color: #f0f0f0;
-    border-radius: 5px;
-    
+.IconsBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
 }
 
+.social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  padding: 0.15rem;
+  background-color: #ffffff;
+  border-radius: 6px;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.social:hover .icon {
+  transform: translateY(-2px);
+  opacity: 0.85;
+}
+
+@media (max-width: 650px) {
+  .footPart {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    padding: 1.5rem 1rem;
+  }
+}

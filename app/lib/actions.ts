@@ -75,13 +75,32 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function createUser(formData: FormData) {
-  const username = formData.get("username") as string;
-  const password = formData.get("password") as string;
-  const firstName = formData.get("first_name") as string;
-  const lastName = formData.get("last_name") as string;
+  const username = String(formData.get("username") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const firstName = String(formData.get("first_name") ?? "").trim();
+  const lastName = String(formData.get("last_name") ?? "").trim();
+  const role = String(formData.get("role") ?? "");
+
+  const allowedRoles = ["customer", "seller"] as const;
+
+  if (!allowedRoles.includes(role as (typeof allowedRoles)[number])) {
+    throw new Error("Please select a valid account type.");
+  }
 
   if (!username || !password || !firstName || !lastName) {
     throw new Error("Please complete all required fields.");
+  }
+
+  if (username.length < 3 || username.length > 50) {
+    throw new Error("Username must be between 3 and 50 characters.");
+  }
+
+  if (firstName.length > 50 || lastName.length > 50) {
+    throw new Error("Name fields cannot exceed 50 characters.");
+  }
+
+  if (password.length < 8) {
+    throw new Error("Password must contain at least 8 characters.");
   }
 
   const { data: existing } = await supabase
@@ -100,7 +119,7 @@ export async function createUser(formData: FormData) {
     username,
     first_name: firstName,
     last_name: lastName,
-    role: "seller",
+    role,
     password: hashedPassword,
   });
 

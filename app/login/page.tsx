@@ -8,11 +8,11 @@ export default function LoginPage() {
       <section className="auth-card" aria-labelledby="login-title">
         <header className="auth-header">
           <h1 id="login-title" className={poppins.className}>
-            Artisan Portal
+            Welcome Back
           </h1>
+
           <p className="auth-subtitle">
-            Sign in with your seller account to manage your Handcrafted Haven
-            shop.
+            Sign in to continue exploring Handcrafted Haven.
           </p>
         </header>
 
@@ -23,13 +23,14 @@ export default function LoginPage() {
             await signIn("credentials", {
               username: formData.get("username"),
               password: formData.get("password"),
-              redirectTo: "/dashboard",
+              redirectTo: "/catalog?welcome=back",
             });
           }}
           className="auth-form"
         >
           <div className="form-group">
             <label htmlFor="username">Username</label>
+
             <input
               id="username"
               type="text"
@@ -43,6 +44,7 @@ export default function LoginPage() {
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
+
             <input
               id="password"
               type="password"
@@ -54,8 +56,11 @@ export default function LoginPage() {
             />
           </div>
 
-          <button type="submit" className="btn-primary btn-full">
-            Sign In to Dashboard
+          <button
+            type="submit"
+            className="btn-primary btn-full"
+          >
+            Sign In
           </button>
         </form>
 
@@ -63,6 +68,7 @@ export default function LoginPage() {
           <Link href="/catalog" className="back-link">
             ← Return to Marketplace Catalog
           </Link>
+
           <Link href="/signup" className="back-link">
             Don&apos;t have an account? Sign up
           </Link>
