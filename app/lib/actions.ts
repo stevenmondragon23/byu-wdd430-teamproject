@@ -3,8 +3,11 @@
 import { supabase } from "@/app/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { signIn } from "@/auth";
+
+
+
 
 export async function createProduct(formData: FormData) {
   const productName = formData.get("product_name") as string;
@@ -107,3 +110,4 @@ export async function createUser(formData: FormData) {
     redirectTo: "/catalog?welcome=true",
   });
 }
+

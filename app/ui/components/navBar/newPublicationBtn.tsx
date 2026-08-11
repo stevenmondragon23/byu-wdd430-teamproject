@@ -13,7 +13,7 @@ export default function NewPublicationBtn() {
     return null;
   }
 
-  if (!session || session.user.role !== "seller") {
+  if (!session?.user || session.user.role !== "seller") {
     return null;
   }
 
