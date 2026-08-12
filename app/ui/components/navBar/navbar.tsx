@@ -6,6 +6,9 @@ import MobileMenu from "@/app/ui/components/navBar/mobile-menu";
 export default async function Navbar() {
   const session = await auth();
 
+  const isLoggedIn = Boolean(session?.user);
+  const isSeller = session?.user?.role === "seller";
+
   return (
     <nav className="site-nav">
       <div className="container nav-inner">
@@ -20,32 +23,38 @@ export default async function Navbar() {
             Catalog
           </Link>
 
-          {session?.user ? (
+          {isSeller && (
             <>
+              <Link href="/dashboard" className="btn-primary">
+                Dashboard
+              </Link>
+
               <Link
                 href="/dashboard/product/create"
                 className="btn-primary"
               >
                 New Publication
               </Link>
-
-              <form
-                action={async () => {
-                  "use server";
-
-                  await signOut({
-                    redirectTo: "/catalog",
-                  });
-                }}
-              >
-                <button
-                  type="submit"
-                  className="btn-primary btn-logout"
-                >
-                  Log out
-                </button>
-              </form>
             </>
+          )}
+
+          {isLoggedIn ? (
+            <form
+              action={async () => {
+                "use server";
+
+                await signOut({
+                  redirectTo: "/catalog",
+                });
+              }}
+            >
+              <button
+                type="submit"
+                className="btn-primary btn-logout"
+              >
+                Log out
+              </button>
+            </form>
           ) : (
             <Link href="/login" className="btn-primary">
               Login
@@ -56,4 +65,3 @@ export default async function Navbar() {
     </nav>
   );
 }
-

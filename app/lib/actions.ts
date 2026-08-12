@@ -2,6 +2,7 @@
 
 import { auth, signIn } from "@/auth";
 import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { supabase } from "./supabase";
 
@@ -62,6 +63,10 @@ export async function createUser(formData: FormData): Promise<void> {
     throw new Error("Could not create account.");
   }
 
+  /*
+   * We do not depend on the automatic sign-in here.
+   * The account has already been created successfully.
+   */
   try {
     await signIn("credentials", {
       username,
@@ -72,7 +77,16 @@ export async function createUser(formData: FormData): Promise<void> {
     console.error("Automatic sign-in failed:", error);
   }
 
-  redirect("/dashboard");
+  /*
+   * Sellers have a dashboard.
+   * Customers should go to the marketplace instead of
+   * being sent to a seller-only dashboard.
+   */
+  if (role === "seller") {
+    redirect("/dashboard");
+  }
+
+  redirect("/catalog");
 }
 
 export async function createProduct(formData: FormData): Promise<void> {
@@ -96,14 +110,22 @@ export async function createProduct(formData: FormData): Promise<void> {
   const description = formData.get("description")?.toString().trim();
   const priceValue = formData.get("price")?.toString();
   const categoryValue = formData.get("category_id")?.toString();
-  const image = formData.get("image");
+  const imageUrl = formData.get("image_url")?.toString().trim();
 
   if (!productName) {
     throw new Error("Product name is required.");
   }
 
+  if (productName.length > 100) {
+    throw new Error("Product name is too long.");
+  }
+
   if (!description) {
     throw new Error("Description is required.");
+  }
+
+  if (description.length > 1000) {
+    throw new Error("Description is too long.");
   }
 
   if (!priceValue) {
@@ -112,6 +134,10 @@ export async function createProduct(formData: FormData): Promise<void> {
 
   if (!categoryValue) {
     throw new Error("Category is required.");
+  }
+
+  if (!imageUrl) {
+    throw new Error("Product image URL is required.");
   }
 
   const price = Number(priceValue);
@@ -125,34 +151,20 @@ export async function createProduct(formData: FormData): Promise<void> {
     throw new Error("Invalid category.");
   }
 
-  if (!(image instanceof File) || image.size === 0) {
-    throw new Error("Please select an image.");
+  let parsedImageUrl: URL;
+
+  try {
+    parsedImageUrl = new URL(imageUrl);
+  } catch {
+    throw new Error("Please enter a valid image URL.");
   }
 
-  if (image.size > 5 * 1024 * 1024) {
-    throw new Error("Image must be smaller than 5MB.");
+  if (
+    parsedImageUrl.protocol !== "http:" &&
+    parsedImageUrl.protocol !== "https:"
+  ) {
+    throw new Error("Image URL must use HTTP or HTTPS.");
   }
-
-  const fileExtension = image.name.split(".").pop()?.toLowerCase() || "jpg";
-
-  const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-  const filePath = `products/${sellerId}/${fileName}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("product-images")
-    .upload(filePath, image, {
-      contentType: image.type,
-      upsert: false,
-    });
-
-  if (uploadError) {
-    console.error("Error uploading product image:", uploadError);
-    throw new Error("Could not upload product image.");
-  }
-
-  const { data } = supabase.storage
-    .from("product-images")
-    .getPublicUrl(filePath);
 
   const { error: productError } = await supabase.from("products").insert({
     seller_id: sellerId,
@@ -160,16 +172,111 @@ export async function createProduct(formData: FormData): Promise<void> {
     product_name: productName,
     description,
     price,
-    image_url: data.publicUrl,
+    image_url: imageUrl,
   });
 
   if (productError) {
     console.error("Error creating product:", productError);
-
-    await supabase.storage.from("product-images").remove([filePath]);
-
     throw new Error("Could not create product.");
   }
 
+  revalidatePath("/catalog");
+  revalidatePath("/dashboard");
+  revalidatePath(`/seller/${sellerId}`);
+
   redirect("/dashboard");
+}
+
+export async function updateSellerStory(
+  prevState: unknown,
+  formData: FormData,
+) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      message: "You must be logged in.",
+    };
+  }
+
+  if (session.user.role !== "seller") {
+    return {
+      success: false,
+      message: "Only sellers can update their story.",
+    };
+  }
+
+  const story = formData.get("story")?.toString().trim();
+
+  if (!story) {
+    return {
+      success: false,
+      message: "Story cannot be empty.",
+    };
+  }
+
+  if (story.length > 2000) {
+    return {
+      success: false,
+      message: "Story cannot exceed 2000 characters.",
+    };
+  }
+
+  const sellerId = Number(session.user.id);
+
+  if (!Number.isInteger(sellerId) || sellerId <= 0) {
+    return {
+      success: false,
+      message: "Invalid seller account.",
+    };
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({ bio: story })
+    .eq("user_id", sellerId);
+
+  if (error) {
+    console.error("Error updating story:", error.message);
+
+    return {
+      success: false,
+      message: "Failed to update story.",
+    };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/seller/${sellerId}`);
+
+  return {
+    success: true,
+    message: "Changes saved successfully!",
+  };
+}
+
+export async function getSellerById(sellerId: number) {
+  const { data, error } = await supabase
+    .from("users")
+    .select(
+      "user_id, username, first_name, last_name, bio, profile_image, role"
+    )
+    .eq("user_id", sellerId)
+    .eq("role", "seller")
+    .single();
+
+  if (error) {
+    console.error("Error fetching seller:", error.message);
+    return null;
+  }
+
+  return {
+    id: String(data.user_id),
+    username: data.username,
+    first_name: data.first_name,
+    last_name: data.last_name,
+    bio: data.bio ?? "",
+    profile_image: data.profile_image ?? null,
+    role: data.role,
+  };
 }

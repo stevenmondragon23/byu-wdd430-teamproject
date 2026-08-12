@@ -1,8 +1,20 @@
+import { auth } from "@/auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createProduct } from "@/app/lib/actions";
 import sql from "@/app/lib/db";
 
 export default async function CreateProductPage() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  if (session.user.role !== "seller") {
+    redirect("/catalog");
+  }
+
   const categories = await sql`
     SELECT category_id, category_name
     FROM categories
@@ -125,23 +137,23 @@ export default async function CreateProductPage() {
 
           <div>
             <label
-              htmlFor="image"
+              htmlFor="image_url"
               className="mb-2 block text-sm font-medium text-slate-700"
             >
-              Product image
+              Product image URL
             </label>
 
             <input
-              id="image"
-              name="image"
-              type="file"
-              accept="image/*"
+              id="image_url"
+              name="image_url"
+              type="url"
               required
-              className="block w-full rounded-lg border border-slate-300 bg-white p-2 text-sm"
+              className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none focus:border-slate-500"
+              placeholder="https://example.com/image.jpg"
             />
 
             <p className="mt-2 text-xs text-slate-500">
-              Maximum file size: 5MB.
+              Enter a direct HTTP or HTTPS URL to the product image.
             </p>
           </div>
 

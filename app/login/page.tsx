@@ -1,8 +1,49 @@
 import { poppins } from "@/app/ui/fonts";
-import { signIn } from "@/auth";
+import { signIn, auth } from "@/auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { AuthError } from "next-auth";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{
+    error?: string;
+  }>;
+};
+
+export default async function LoginPage({
+  searchParams,
+}: LoginPageProps) {
+  const params = await searchParams;
+
+  async function loginAction(formData: FormData) {
+    "use server";
+
+    const username = formData.get("username");
+    const password = formData.get("password");
+
+    try {
+      await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+      });
+
+      const session = await auth();
+
+      if (session?.user?.role === "seller") {
+        redirect("/dashboard");
+      }
+
+      redirect("/catalog");
+    } catch (error) {
+      if (error instanceof AuthError) {
+        redirect("/login?error=User%20not%20found");
+      }
+
+      throw error;
+    }
+  }
+
   return (
     <div className="auth-wrapper">
       <section className="auth-card" aria-labelledby="login-title">
@@ -16,18 +57,16 @@ export default function LoginPage() {
           </p>
         </header>
 
-        <form
-          action={async (formData) => {
-            "use server";
+        {params.error && (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          >
+            {params.error}
+          </div>
+        )}
 
-            await signIn("credentials", {
-              username: formData.get("username"),
-              password: formData.get("password"),
-              redirectTo: "/catalog?welcome=back",
-            });
-          }}
-          className="auth-form"
-        >
+        <form action={loginAction} className="auth-form">
           <div className="form-group">
             <label htmlFor="username">Username</label>
 
@@ -56,10 +95,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="btn-primary btn-full"
-          >
+          <button type="submit" className="btn-primary btn-full">
             Sign In
           </button>
         </form>

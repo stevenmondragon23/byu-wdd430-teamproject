@@ -1,5 +1,4 @@
 import { supabase } from "@/app/lib/supabase";
-import Image from "next/image";
 import Link from "next/link";
 import styles from "@/app/product/[id]/productPage.module.css";
 import { UserRating } from "@/app/ui/components/rating/StarRating";
@@ -38,7 +37,7 @@ export default async function producto({
     <main className={styles.productPage}>
       <div className={styles.presentation}>
         <div className={styles.imageContainer}>
-          <Image
+          <img
             src={productAnswer.image_url}
             alt={productAnswer.product_name}
             width={1200}

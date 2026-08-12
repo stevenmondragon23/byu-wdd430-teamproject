@@ -1,47 +1,91 @@
-import { sellers } from "@/app/lib/placeholder-data";
+import { getSellerById } from "@/app/lib/actions";
 import { poppins } from "@/app/ui/fonts";
-import { Seller } from "@/app/lib/definitions";
+import { notFound } from "next/navigation";
 
-function isVeteran(joinedDateStr: string) {
-  const joinedDate = new Date(joinedDateStr);
-  const threeMonthsAgo = new Date();
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-  return joinedDate < threeMonthsAgo;
-}
+export default async function SellerProfile({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = await params;
+  const sellerId = Number(resolvedParams.id);
 
-export default function SellerProfile({ params }: { params: { id: string } }) {
-  const seller = sellers.find((s: Seller) => s.id === params.id);
-
-  if (!seller) {
-    return <h2>Seller not found</h2>;
+  if (!Number.isInteger(sellerId) || sellerId <= 0) {
+    notFound();
   }
 
-  const veteran = isVeteran(seller.joined_at);
+  const seller = await getSellerById(sellerId);
+
+  if (!seller) {
+    notFound();
+  }
 
   return (
-    <div className="container seller-profile">
-      <div className="seller-card">
-        <div className="seller-heading">
-          <h1 className={`${poppins.className} seller-name`}>{seller.name}</h1>
+    <main className="container" style={{ marginTop: "40px" }}>
+      <div
+        style={{
+          backgroundColor: "white",
+          padding: "30px",
+          borderRadius: "15px",
+          border: "1px solid var(--secondary-color)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "15px",
+            flexWrap: "wrap",
+          }}
+        >
+          <h1
+            className={poppins.className}
+            style={{ margin: 0 }}
+          >
+            {seller.first_name} {seller.last_name}
+          </h1>
 
           <span
-            className={`seller-badge ${
-              veteran ? "seller-badge-verified" : "seller-badge-new"
-            }`}
+            style={{
+              backgroundColor: "#78350f",
+              color: "white",
+              padding: "5px 12px",
+              borderRadius: "15px",
+              fontSize: "0.8rem",
+              fontWeight: "bold",
+            }}
           >
-            {veteran ? "Verified Seller" : "New Seller"}
+            Seller
           </span>
         </div>
 
-        <div className="seller-rating">
-          ★ {seller.average_rating.toFixed(1)} of rating
-        </div>
+        <p
+          style={{
+            marginTop: "8px",
+            color: "#78350f",
+            fontWeight: "600",
+          }}
+        >
+          @{seller.username}
+        </p>
 
-        <div className="seller-history">
-          <h3 className={poppins.className}>My History</h3>
-          <p>{seller.story}</p>
+        <div style={{ marginTop: "20px" }}>
+          <h2
+            className={poppins.className}
+            style={{
+              color: "var(--primary-color)",
+              marginBottom: "10px",
+            }}
+          >
+            My History
+          </h2>
+
+          <p>
+            {seller.bio ||
+              "This seller has not added their story yet."}
+          </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
