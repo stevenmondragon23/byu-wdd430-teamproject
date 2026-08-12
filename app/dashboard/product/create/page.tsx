@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import { getCategories } from '@/app/lib/actions';
 import CreateProductForm from '@/app/ui/components/form/CreateProductForm';
 
 export default async function CreateProduct() {
@@ -9,7 +10,9 @@ export default async function CreateProduct() {
     redirect('/login');
   }
 
+  const categories = await getCategories();
+
   return (
-    <CreateProductForm />
+    <CreateProductForm categories={categories ?? []} />
   );
 }

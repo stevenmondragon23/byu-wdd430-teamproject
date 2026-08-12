@@ -4,22 +4,35 @@ import { supabase } from "@/app/lib/supabase";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
-import { signIn } from "@/auth";
+import { auth, signIn } from "@/auth";
 
 
 
 
 export async function createProduct(formData: FormData) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to create a product.");
+  }
+
+  const sellerId = Number(session.user.id);
+
+  if (isNaN(sellerId)) {
+    throw new Error("Invalid seller id in session.");
+  }
+
   const productName = formData.get("product_name") as string;
   const description = formData.get("description") as string;
   const price = Number(formData.get("price"));
   const categoryId = Number(formData.get("category_id"));
-  const image = formData.get("image") as File;
+  const imageUrl = (formData.get("image_url") as string)?.trim();
 
   // Validation
   if (
     !productName ||
     !description ||
+    !imageUrl ||
     isNaN(price) ||
     price <= 0 ||
     isNaN(categoryId)
@@ -27,32 +40,11 @@ export async function createProduct(formData: FormData) {
     throw new Error("Please complete all required fields.");
   }
 
-  const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
-  if (image && image.size > MAX_FILE_SIZE) {
-    throw new Error("The image exceeds the 5MB limit.");
+  try {
+    new URL(imageUrl);
+  } catch {
+    throw new Error("Please provide a valid image URL.");
   }
-
-  let imageUrl = "";
-
-  if (image && image.size > 0) {
-    const fileName = `${Date.now()}-${image.name}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("products")
-      .upload(fileName, image);
-
-    if (uploadError) {
-      throw new Error(uploadError.message);
-    }
-
-    const { data } = supabase.storage.from("products").getPublicUrl(fileName);
-
-    imageUrl = data.publicUrl;
-  }
-
-  // Temporal hasta implementar autenticación
-  const sellerId = 1;
 
   const { error } = await supabase.from("products").insert({
     seller_id: sellerId,
@@ -115,3 +107,13 @@ export async function createUser(formData: FormData) {
   });
 }
 
+export async function getCategories() {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("category_id, category_name")
+    .order("category_name", { ascending: true });
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
