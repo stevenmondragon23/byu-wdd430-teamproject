@@ -1,13 +1,15 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import Link from "next/dist/client/link";
+import Link from "next/link";
 
 
 
 
 export default function NewPublicationBtn() {
+
   const { data: session, status } = useSession();
+  console.log(session?.user.role);
 
   if (status === "loading") {
     return null;

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { poppins } from '@/app/ui/fonts';
-
+import NewPublicationBtn from '@/app/ui/components/navBar/newPublicationBtn';
+import { SessionProvider } from 'next-auth/react';
 
 export default function Navbar() {
   return (
@@ -18,8 +19,9 @@ export default function Navbar() {
         </Link>
         <div className="bottomNav" style={{ display: 'flex', gap: '2px' }}>
 
-          <Link href="/dashboard/product/create" className="btn-primary">New Publication</Link>
-          
+          <SessionProvider>  
+            <NewPublicationBtn />
+          </SessionProvider>
           <Link href="/catalog" className="btn-primary" >Catalog</Link>
           <Link href="/login" className="btn-primary">Login</Link>
         </div>
