@@ -9,6 +9,7 @@ import Link from "next/link";
 export default function NewPublicationBtn() {
 
   const { data: session, status } = useSession();
+  console.log("Session data:", session);
   console.log(session?.user.role);
 
   if (status === "loading") {

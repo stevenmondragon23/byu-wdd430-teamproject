@@ -1,5 +1,6 @@
+"use client";
 import { poppins } from "@/app/ui/fonts";
-import { signIn } from "@/auth";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -18,7 +19,7 @@ export default function LoginPage() {
 
         <form
           action={async (formData) => {
-            "use server";
+            
 
             await signIn("credentials", {
               username: formData.get("username"),
