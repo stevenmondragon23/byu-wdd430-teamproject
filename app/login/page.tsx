@@ -1,8 +1,13 @@
+"use client";
+
+import { useActionState } from "react";
 import { poppins } from "@/app/ui/fonts";
-import { signIn } from "@/auth";
 import Link from "next/link";
+import { authenticate } from "@/app/lib/actions";
 
 export default function LoginPage() {
+  const [errorMessage, formAction, isPending] = useActionState(authenticate, undefined);
+
   return (
     <div className="auth-wrapper">
       <section className="auth-card" aria-labelledby="login-title">
@@ -16,18 +21,25 @@ export default function LoginPage() {
           </p>
         </header>
 
-        <form
-          action={async (formData) => {
-            "use server";
+        <form action={formAction} className="auth-form">
+          {/* Display error message */}
+          {errorMessage && (
+            <div 
+              style={{
+                backgroundColor: "#fee2e2",
+                color: "#991b1b",
+                padding: "12px 14px",
+                borderRadius: "8px",
+                fontSize: "0.875rem",
+                fontWeight: "600",
+                border: "1px solid #fecaca",
+                marginBottom: "16px"
+              }}
+            >
+              ⚠️ {errorMessage}
+            </div>
+          )}
 
-            await signIn("credentials", {
-              username: formData.get("username"),
-              password: formData.get("password"),
-              redirectTo: "/catalog?welcome=back",
-            });
-          }}
-          className="auth-form"
-        >
           <div className="form-group">
             <label htmlFor="username">Username</label>
 
@@ -58,9 +70,11 @@ export default function LoginPage() {
 
           <button
             type="submit"
+            disabled={isPending}
             className="btn-primary btn-full"
+            style={{ opacity: isPending ? 0.7 : 1, cursor: isPending ? "not-allowed" : "pointer" }}
           >
-            Sign In
+            {isPending ? "Signing in..." : "Sign In"}
           </button>
         </form>
 

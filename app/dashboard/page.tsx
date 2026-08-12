@@ -3,74 +3,40 @@ import { notFound, redirect } from "next/navigation";
 import sql from "@/app/lib/db";
 import { poppins } from "@/app/ui/fonts";
 import Link from "next/link";
+import BioForm from "./bioForm"; 
 
 export const dynamic = "force-dynamic";
 
 export default async function SellerDashboardPage() {
   const session = await auth();
-
-  if (!session || !session.user) {
-    redirect("/login");
-  }
+  if (!session || !session.user) redirect("/login");
 
   const userRole = (session.user as any).role;
   const userId = Number((session.user as any).id);
-
-  if (userRole !== "seller") {
-    notFound();
-  }
+  if (userRole !== "seller") notFound();
 
   const sellerInfo = await sql`
-    SELECT user_id, username, first_name, last_name, bio, profile_image
-    FROM users
-    WHERE user_id = ${userId}
-    LIMIT 1;
+    SELECT user_id, username, first_name, last_name, bio, profile_image, role
+    FROM users WHERE user_id = ${userId} LIMIT 1;
   `;
 
   const seller = sellerInfo[0] || {
     username: session.user.name,
     first_name: session.user.name,
     last_name: "",
-    bio: "Passionate artisan dedicating care and craftsmanship to every single handmade item.",
+    bio: "Passionate artisan dedicating care and craftsmanship...",
+    role: userRole,
   };
 
   const myProducts = await sql`
-    SELECT 
-      product_id, 
-      product_name, 
-      description, 
-      price, 
-      image_url, 
-      created_at
-    FROM products
-    WHERE seller_id = ${userId}
-    ORDER BY created_at DESC;
+    SELECT product_id, product_name, description, price, image_url, created_at
+    FROM products WHERE seller_id = ${userId} ORDER BY created_at DESC;
   `;
 
   return (
-    <div 
-      className="container" 
-      style={{ 
-        maxWidth: "1280px", 
-        margin: "0 auto", 
-        padding: "30px 16px 80px 16px" 
-      }}
-    >
-      {/* SECTION 1: SELLER PROFILE & STORY */}
-      <div 
-        style={{
-          backgroundColor: "#fef3c7",
-          border: "2px solid #78350f",
-          borderRadius: "16px",
-          padding: "24px",
-          marginBottom: "40px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
-          color: "#451a03",
-          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)"
-        }}
-      >
+    <div className="container" style={{ maxWidth: "1280px", margin: "0 auto", padding: "30px 16px 80px 16px" }}>
+      {/* SECTION 1 SELLER PROFILE */}
+      <div style={{ backgroundColor: "#fef3c7", border: "2px solid #78350f", borderRadius: "16px", padding: "24px", marginBottom: "40px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
           <div>
             <span style={{ fontSize: "0.8rem", textTransform: "uppercase", fontWeight: "bold", letterSpacing: "1px", color: "#92400e" }}>
@@ -79,7 +45,23 @@ export default async function SellerDashboardPage() {
             <h1 className={poppins.className} style={{ fontSize: "2rem", margin: "4px 0" }}>
               {seller.first_name} {seller.last_name}
             </h1>
-            <p style={{ margin: 0, fontWeight: "600", color: "#78350f" }}>@{seller.username}</p>
+            
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
+              <p style={{ margin: 0, fontWeight: "600", color: "#78350f" }}>@{seller.username}</p>
+              <span 
+                style={{ 
+                  backgroundColor: "#78350f", 
+                  color: "#ffffff", 
+                  fontSize: "0.75rem", 
+                  padding: "2px 8px", 
+                  borderRadius: "12px", 
+                  fontWeight: "bold",
+                  textTransform: "capitalize"
+                }}
+              >
+                {seller.role || "seller"}
+              </span>
+            </div>
           </div>
 
           <Link
@@ -99,19 +81,18 @@ export default async function SellerDashboardPage() {
           </Link>
         </div>
 
-        <hr style={{ border: "none", borderTop: "1px solid #d97706", margin: "4px 0" }} />
+        <hr style={{ border: "none", borderTop: "1px solid #d97706", margin: "16px 0" }} />
 
         <div>
           <h3 className={poppins.className} style={{ margin: "0 0 8px 0", fontSize: "1.15rem" }}>
             Our Craftsmanship Story
           </h3>
-          <p style={{ margin: 0, lineHeight: "1.6", color: "#78350f", fontSize: "0.95rem" }}>
-            {seller.bio || "Welcome to my workshop! Here I showcase my curated collection of handmade items, crafted with dedication, sustainable practices, and authenticity."}
-          </p>
+          
+          <BioForm sellerId={userId} initialBio={seller.bio} />
         </div>
       </div>
 
-      {/* SECTION 2: CURATED COLLECTION */}
+      {/* SECTION 2: MY LISTED PRODUCTS */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
         <h2 className={poppins.className} style={{ fontSize: "1.75rem", margin: 0, color: "#111827" }}>
           My Handcrafted Collection ({myProducts.length})

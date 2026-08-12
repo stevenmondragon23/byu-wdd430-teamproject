@@ -4,6 +4,7 @@ export type Seller = {
   story: string;
   joined_at: string;
   average_rating: number;
+  role: "seller" | "customer" | "admin";
 };
 
 export type Product = {

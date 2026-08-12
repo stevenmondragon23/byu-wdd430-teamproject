@@ -3,7 +3,9 @@
 import { auth, signIn } from "@/auth";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { supabase } from "./supabase";
+import { AuthError } from "next-auth";
 
 export async function createUser(formData: FormData): Promise<void> {
   const username = formData.get("username")?.toString().trim();
@@ -172,4 +174,73 @@ export async function createProduct(formData: FormData): Promise<void> {
   }
 
   redirect("/dashboard");
+}
+
+export async function updateSellerStory(prevState: any, formData: FormData) {
+  const story = formData.get("story")?.toString().trim();
+  const sellerId = formData.get("sellerId")?.toString().trim();
+
+  if (!story) {
+    return { success: false, message: "Story cannot be empty." };
+  }
+
+  if (!sellerId) {
+    return { success: false, message: "Seller ID is required." };
+  }
+
+  const { error } = await supabase
+    .from("users") 
+    .update({ bio: story })
+    .eq("user_id", sellerId);
+
+  if (error) {
+    console.error("Error updating story:", error.message);
+    return { success: false, message: "Failed to update story." };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/seller/${sellerId}`);
+  
+  return { success: true, message: "Changes saved successfully!" };
+}
+
+export async function getSellerById(sellerId: number) {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("user_id", sellerId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching seller:", error.message);
+    return null;
+  }
+
+  return data;
+}
+
+export async function authenticate(prevState: string | undefined, formData: FormData) {
+  try {
+    await signIn("credentials", {
+      username: formData.get("username"),
+      password: formData.get("password"),
+      redirectTo: "/catalog?welcome=back",
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      const cause = error.cause?.err?.message;
+      
+      if (cause === "USER_NOT_FOUND") {
+        return "User not found. Please check your username or create an account.";
+      }
+      
+      if (cause === "INVALID_PASSWORD") {
+        return "Invalid username or password.";
+      }
+
+      return "Invalid username or password.";
+    }
+
+    throw error;
+  }
 }

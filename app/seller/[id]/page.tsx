@@ -1,6 +1,6 @@
-import { sellers } from "@/app/lib/placeholder-data";
-import { poppins } from "@/app/ui/fonts";
-import { Seller } from "@/app/lib/definitions";
+import { getSellerById } from '@/app/lib/actions';
+import { poppins } from '@/app/ui/fonts';
+import { Seller } from '@/app/lib/definitions';
 
 function isVeteran(joinedDateStr: string) {
   const joinedDate = new Date(joinedDateStr);
@@ -9,8 +9,16 @@ function isVeteran(joinedDateStr: string) {
   return joinedDate < threeMonthsAgo;
 }
 
-export default function SellerProfile({ params }: { params: { id: string } }) {
-  const seller = sellers.find((s: Seller) => s.id === params.id);
+export default async function SellerProfile({ 
+  params 
+}: { 
+  params: Promise<{ id: string }>
+}) {
+  const resolvedParams = await params;
+  
+  const sellerId = Number(resolvedParams.id);
+
+  const seller = await getSellerById(sellerId);
 
   if (!seller) {
     return <h2>Seller not found</h2>;
@@ -18,28 +26,34 @@ export default function SellerProfile({ params }: { params: { id: string } }) {
 
   const veteran = isVeteran(seller.joined_at);
 
-  return (
-    <div className="container seller-profile">
-      <div className="seller-card">
-        <div className="seller-heading">
-          <h1 className={`${poppins.className} seller-name`}>{seller.name}</h1>
+  const rating = seller.rating ?? 0;
 
-          <span
-            className={`seller-badge ${
-              veteran ? "seller-badge-verified" : "seller-badge-new"
-            }`}
-          >
-            {veteran ? "Verified Seller" : "New Seller"}
+  return (
+    <div className="container" style={{ marginTop: '40px' }}>
+      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '15px', border: '1px solid var(--secondary-color)' }}>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <h1 className={poppins.className} style={{ margin: 0 }}>{seller.username}</h1>
+          
+          <span style={{
+            backgroundColor: veteran ? '#3b82f6' : 'var(--accent-color)',
+            color: 'white',
+            padding: '5px 12px',
+            borderRadius: '15px',
+            fontSize: '0.8rem',
+            fontWeight: 'bold'
+          }}>
+            {veteran ? 'Verified Seller' : 'New Seller'}
           </span>
         </div>
 
-        <div className="seller-rating">
-          ★ {seller.average_rating.toFixed(1)} of rating
+        <div style={{ marginTop: '10px', color: '#f59e0b', fontSize: '1.2rem' }}>
+          ★ {rating.toFixed(1)} of rating
         </div>
 
-        <div className="seller-history">
-          <h3 className={poppins.className}>My History</h3>
-          <p>{seller.story}</p>
+        <div style={{ marginTop: '20px' }}>
+          <h3 className={poppins.className} style={{ color: 'var(--primary-color)' }}>My History</h3>
+          <p>{seller.bio}</p>
         </div>
       </div>
     </div>
