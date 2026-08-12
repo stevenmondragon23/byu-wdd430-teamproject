@@ -18,6 +18,7 @@ export default function BioForm({
   initialBio,
 }: BioFormProps) {
   const [bio, setBio] = useState(initialBio);
+
   const [state, formAction, isPending] = useActionState<
     BioState,
     FormData
@@ -53,7 +54,11 @@ export default function BioForm({
   }
 
   return (
-    <form action={formAction} onSubmit={handleSubmit}>
+    <form
+      action={formAction}
+      onSubmit={handleSubmit}
+      className="bio-form"
+    >
       <input
         type="hidden"
         name="sellerId"
@@ -67,44 +72,15 @@ export default function BioForm({
         rows={5}
         maxLength={2000}
         aria-label="Your craftsmanship story"
-        style={{
-          width: "100%",
-          padding: "12px",
-          borderRadius: "8px",
-          border: "1px solid #d97706",
-          backgroundColor: "#fffdf9",
-          color: "#78350f",
-          fontSize: "0.95rem",
-          fontFamily: "inherit",
-          lineHeight: "1.6",
-          boxSizing: "border-box",
-          marginBottom: "12px",
-          resize: "vertical",
-        }}
+        className="bio-textarea"
+        placeholder="Tell customers about your craftsmanship..."
       />
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="bio-form-footer">
         <button
           type="submit"
           disabled={isPending}
-          style={{
-            backgroundColor: "#92400e",
-            color: "white",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            border: "none",
-            fontWeight: "bold",
-            cursor: isPending ? "not-allowed" : "pointer",
-            fontSize: "0.9rem",
-            opacity: isPending ? 0.7 : 1,
-          }}
+          className="btn-primary bio-submit"
         >
           {isPending ? "Saving..." : "Save Changes"}
         </button>
@@ -112,11 +88,11 @@ export default function BioForm({
         {showNotice && state?.message && (
           <span
             role="status"
-            style={{
-              color: state.success ? "#15803d" : "#b91c1c",
-              fontWeight: "bold",
-              fontSize: "0.9rem",
-            }}
+            className={`bio-notice ${
+              state.success
+                ? "bio-notice-success"
+                : "bio-notice-error"
+            }`}
           >
             {state.message}
           </span>

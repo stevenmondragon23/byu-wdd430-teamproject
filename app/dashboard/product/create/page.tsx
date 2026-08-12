@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createProduct } from "@/app/lib/actions";
 import sql from "@/app/lib/db";
+import { poppins } from "@/app/ui/fonts";
 
 export default async function CreateProductPage() {
   const session = await auth();
@@ -22,36 +23,30 @@ export default async function CreateProductPage() {
   `;
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-10">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-8">
-          <Link
-            href="/dashboard"
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            ← Back to dashboard
-          </Link>
+    <main className="container">
+      <section className="create-product">
+        <Link href="/dashboard" className="back-link create-product-back">
+          ← Back to dashboard
+        </Link>
 
-          <h1 className="mt-4 text-3xl font-bold text-slate-900">
+        <header className="create-product-header">
+          <span className="section-eyebrow">Seller workspace</span>
+
+          <h1 className={`${poppins.className} create-product-title`}>
             Create a Product
           </h1>
 
-          <p className="mt-2 text-slate-600">
+          <p className="create-product-subtitle">
             Add a new handcrafted product to your store.
           </p>
-        </div>
+        </header>
 
         <form
           action={createProduct}
-          className="space-y-6 rounded-xl bg-white p-6 shadow-sm"
+          className="create-product-form"
         >
-          <div>
-            <label
-              htmlFor="product_name"
-              className="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Product name
-            </label>
+          <div className="form-group">
+            <label htmlFor="product_name">Product name</label>
 
             <input
               id="product_name"
@@ -59,18 +54,13 @@ export default async function CreateProductPage() {
               type="text"
               required
               maxLength={100}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none focus:border-slate-500"
+              className="form-input"
               placeholder="Handmade Ceramic Mug"
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="description"
-              className="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Description
-            </label>
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
 
             <textarea
               id="description"
@@ -78,19 +68,14 @@ export default async function CreateProductPage() {
               required
               rows={5}
               maxLength={1000}
-              className="w-full resize-none rounded-lg border border-slate-300 px-4 py-2 outline-none focus:border-slate-500"
+              className="form-input"
               placeholder="Describe your handcrafted product..."
             />
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="price"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
-                Price
-              </label>
+          <div className="create-product-row">
+            <div className="form-group">
+              <label htmlFor="price">Price</label>
 
               <input
                 id="price"
@@ -99,25 +84,20 @@ export default async function CreateProductPage() {
                 min="0.01"
                 step="0.01"
                 required
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none focus:border-slate-500"
+                className="form-input"
                 placeholder="25.99"
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="category_id"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
-                Category
-              </label>
+            <div className="form-group">
+              <label htmlFor="category_id">Category</label>
 
               <select
                 id="category_id"
                 name="category_id"
                 required
                 defaultValue=""
-                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 outline-none focus:border-slate-500"
+                className="form-input"
               >
                 <option value="" disabled>
                   Select a category
@@ -135,36 +115,31 @@ export default async function CreateProductPage() {
             </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="image_url"
-              className="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Product image URL
-            </label>
+          <div className="form-group">
+            <label htmlFor="image_url">Product image URL</label>
 
             <input
               id="image_url"
               name="image_url"
               type="url"
               required
-              className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none focus:border-slate-500"
+              className="form-input"
               placeholder="https://example.com/image.jpg"
             />
 
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="form-help">
               Enter a direct HTTP or HTTPS URL to the product image.
             </p>
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700"
+            className="btn-primary btn-full create-product-submit"
           >
             Create Product
           </button>
         </form>
-      </div>
+      </section>
     </main>
   );
 }
