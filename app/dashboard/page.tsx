@@ -1,3 +1,4 @@
+import ProductActions from "./product/ProductActions";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import sql from "@/app/lib/db";
@@ -73,8 +74,7 @@ export default async function SellerDashboardPage() {
             </h1>
 
             <p className="dashboard-subtitle">
-              Manage your artisan profile and handcrafted
-              collection.
+              Manage your artisan profile and handcrafted collection.
             </p>
           </div>
 
@@ -197,6 +197,10 @@ export default async function SellerDashboardPage() {
                           View Product →
                         </Link>
                       </div>
+
+                      <ProductActions
+                        productId={product.product_id}
+                      />
                     </div>
                   </article>
                 );

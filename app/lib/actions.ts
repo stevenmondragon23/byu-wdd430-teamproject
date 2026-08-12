@@ -280,3 +280,275 @@ export async function getSellerById(sellerId: number) {
     role: data.role,
   };
 }
+
+export async function updateProduct(formData: FormData): Promise<void> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in.");
+  }
+
+  if (session.user.role !== "seller") {
+    throw new Error("Only sellers can edit products.");
+  }
+
+  const sellerId = Number(session.user.id);
+  const productId = Number(formData.get("product_id"));
+
+  if (!Number.isInteger(sellerId) || sellerId <= 0) {
+    throw new Error("Invalid seller account.");
+  }
+
+  if (!Number.isInteger(productId) || productId <= 0) {
+    throw new Error("Invalid product.");
+  }
+
+  const productName = formData
+    .get("product_name")
+    ?.toString()
+    .trim();
+
+  const description = formData
+    .get("description")
+    ?.toString()
+    .trim();
+
+  const priceValue = formData
+    .get("price")
+    ?.toString()
+    .trim();
+
+  const categoryValue = formData
+    .get("category_id")
+    ?.toString()
+    .trim();
+
+  const imageUrl = formData
+    .get("image_url")
+    ?.toString()
+    .trim();
+
+  if (!productName) {
+    throw new Error("Product name is required.");
+  }
+
+  if (!description) {
+    throw new Error("Description is required.");
+  }
+
+  if (!priceValue) {
+    throw new Error("Price is required.");
+  }
+
+  if (!categoryValue) {
+    throw new Error("Category is required.");
+  }
+
+  if (!imageUrl) {
+    throw new Error("Product image URL is required.");
+  }
+
+  const price = Number(priceValue);
+  const categoryId = Number(categoryValue);
+
+  if (!Number.isFinite(price) || price <= 0) {
+    throw new Error("Price must be greater than 0.");
+  }
+
+  if (!Number.isInteger(categoryId) || categoryId <= 0) {
+    throw new Error("Invalid category.");
+  }
+
+  let parsedImageUrl: URL;
+
+  try {
+    parsedImageUrl = new URL(imageUrl);
+  } catch {
+    throw new Error("Please enter a valid image URL.");
+  }
+
+  if (
+    parsedImageUrl.protocol !== "http:" &&
+    parsedImageUrl.protocol !== "https:"
+  ) {
+    throw new Error("Image URL must use HTTP or HTTPS.");
+  }
+
+  /*
+   * IMPORTANT:
+   * The seller_id is included in the update condition.
+   *
+   * This prevents a seller from editing another seller's
+   * product by manually changing the product ID.
+   */
+  const { data, error } = await supabase
+    .from("products")
+    .update({
+      category_id: categoryId,
+      product_name: productName,
+      description,
+      price,
+      image_url: imageUrl,
+    })
+    .eq("product_id", productId)
+    .eq("seller_id", sellerId)
+    .select("product_id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error updating product:", error.message);
+    throw new Error("Could not update product.");
+  }
+
+  if (!data) {
+    throw new Error(
+      "Product not found or you do not own this product.",
+    );
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/catalog");
+  revalidatePath(`/product/${productId}`);
+
+  redirect("/dashboard");
+}
+
+
+export async function deleteProduct(
+  productId: number,
+): Promise<void> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in.");
+  }
+
+  if (session.user.role !== "seller") {
+    throw new Error("Only sellers can delete products.");
+  }
+
+  const sellerId = Number(session.user.id);
+
+  if (!Number.isInteger(sellerId) || sellerId <= 0) {
+    throw new Error("Invalid seller account.");
+  }
+
+  if (!Number.isInteger(productId) || productId <= 0) {
+    throw new Error("Invalid product.");
+  }
+
+  /*
+   * First verify ownership.
+   */
+  const { data: product, error: productFetchError } =
+    await supabase
+      .from("products")
+      .select("product_id")
+      .eq("product_id", productId)
+      .eq("seller_id", sellerId)
+      .maybeSingle();
+
+  if (productFetchError) {
+    console.error(
+      "Error checking product ownership:",
+      productFetchError.message,
+    );
+
+    throw new Error("Could not verify product ownership.");
+  }
+
+  if (!product) {
+    throw new Error(
+      "Product not found or you do not own this product.",
+    );
+  }
+
+  /*
+   * Remove reviews belonging to this product first.
+   *
+   * This makes deletion work even if the database does not
+   * have ON DELETE CASCADE configured for reviews.
+   */
+  const { error: reviewsError } = await supabase
+    .from("reviews")
+    .delete()
+    .eq("product_id", productId);
+
+  if (reviewsError) {
+    console.error(
+      "Error deleting product reviews:",
+      reviewsError.message,
+    );
+
+    throw new Error("Could not delete product reviews.");
+  }
+
+  /*
+   * Delete only the product owned by the current seller.
+   */
+  const { error: deleteError } = await supabase
+    .from("products")
+    .delete()
+    .eq("product_id", productId)
+    .eq("seller_id", sellerId);
+
+  if (deleteError) {
+    console.error(
+      "Error deleting product:",
+      deleteError.message,
+    );
+
+    throw new Error("Could not delete product.");
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/catalog");
+  revalidatePath(`/product/${productId}`);
+}
+
+export async function deleteReview(
+  reviewId: number,
+): Promise<void> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in.");
+  }
+
+  const userId = Number(session.user.id);
+
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new Error("Invalid user account.");
+  }
+
+  if (!Number.isInteger(reviewId) || reviewId <= 0) {
+    throw new Error("Invalid review.");
+  }
+
+  /*
+   * The user_id condition is critical.
+   *
+   * Even if somebody manually changes the review ID,
+   * they can only delete a review that belongs to them.
+   */
+  const { data, error } = await supabase
+    .from("reviews")
+    .delete()
+    .eq("review_id", reviewId)
+    .eq("user_id", userId)
+    .select("review_id")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error deleting review:", error.message);
+    throw new Error("Could not delete review.");
+  }
+
+  if (!data) {
+    throw new Error(
+      "Review not found or you do not own this review.",
+    );
+  }
+
+  revalidatePath("/catalog");
+}

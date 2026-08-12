@@ -3,6 +3,7 @@ import Link from "next/link";
 import styles from "@/app/product/[id]/productPage.module.css";
 import { UserRating } from "@/app/ui/components/rating/StarRating";
 import { auth } from "@/auth";
+import ReviewsList from "@/app/ui/components/rating/ReviewsList";
 
 export default async function producto({
   params,
@@ -34,53 +35,57 @@ export default async function producto({
     : "Cargando...";
 
   return (
-    <main className={styles.productPage}>
-      <div className={styles.presentation}>
-        <div className={styles.imageContainer}>
-          <img
-            src={productAnswer.image_url}
-            alt={productAnswer.product_name}
-            width={1200}
-            height={1000}
-            className={styles.productImage}
-          />
-        </div>
+  <main className={styles.productPage}>
+    <div className={styles.presentation}>
+      <div className={styles.imageContainer}>
+        <img
+          src={productAnswer.image_url}
+          alt={productAnswer.product_name}
+          width={1200}
+          height={1000}
+          className={styles.productImage}
+        />
+      </div>
 
-        <section className={styles.text}>
-          <h1>{productAnswer.product_name}</h1>
+      <section className={styles.text}>
+        <h1>{productAnswer.product_name}</h1>
 
-          <p className={styles.description}>
-            {productAnswer.description}
+        <p className={styles.description}>
+          {productAnswer.description}
+        </p>
+
+        <div className={styles.details}>
+          <h2>Specifications</h2>
+
+          <p>
+            <strong>Seller:</strong>{" "}
+            <Link
+              href={`/seller/${productAnswer.users.user_id}`}
+            >
+              {productAnswer.users.first_name}{" "}
+              {productAnswer.users.last_name}
+            </Link>
           </p>
 
-          <div className={styles.details}>
-            <h2>Specifications</h2>
+          <p>
+            <strong>Price:</strong> ${productAnswer.price}
+          </p>
 
-            <p>
-              <strong>Seller:</strong>{" "}
-              <Link href={`/seller/${productAnswer.users.user_id}`}>
-                {productAnswer.users.first_name}{" "}
-                {productAnswer.users.last_name}
-              </Link>
-            </p>
+          <p>
+            <strong>Publish Date:</strong> {formatDate}
+          </p>
 
-            <p>
-              <strong>Price:</strong> ${productAnswer.price}
-            </p>
-
-            <p>
-              <strong>Publish Date:</strong> {formatDate}
-            </p>
-
-            <div className={styles.ratingSection}>
-              <UserRating
-                product_id={productAnswer.product_id}
-                isLoggedIn={!!session}
-              />
-            </div>
+          <div className={styles.ratingSection}>
+            <UserRating
+              product_id={productAnswer.product_id}
+              isLoggedIn={!!session}
+            />
           </div>
-        </section>
-      </div>
-    </main>
-  );
+        </div>
+      </section>
+    </div>
+
+    <ReviewsList productId={productAnswer.product_id} />
+  </main>
+);
 }

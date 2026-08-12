@@ -19,6 +19,7 @@ export default async function CatalogPage({
   }>;
 }) {
   const resolvedParams = await searchParams;
+
   const query = resolvedParams?.query?.toLowerCase() || "";
   const sort = resolvedParams?.sort || "";
 
@@ -31,54 +32,160 @@ export default async function CatalogPage({
         ? "back"
         : null;
 
+  /*
+   * Fetch products together with their seller.
+   */
   let queryBuilder = supabase.from("products").select(`
-      *,
-      users (
-        user_id,
-        username,
-        first_name,
-        last_name,
-        role
-      )`);
+    *,
+    users (
+      user_id,
+      username,
+      first_name,
+      last_name,
+      role
+    )
+  `);
 
   if (query) {
-    queryBuilder = queryBuilder.ilike("product_name", `%${query}%`);
+    queryBuilder = queryBuilder.ilike(
+      "product_name",
+      `%${query}%`,
+    );
   }
 
-  let { data: products, error } = await queryBuilder;
+  const { data: products, error: productsError } = await queryBuilder;
 
-  if (error) {
-    console.error("Error fetching products:", error);
+  if (productsError) {
+    console.error(
+      "Error fetching products:",
+      productsError.message,
+    );
   }
 
-  const sortedProducts = [...(products || [])].sort((a: any, b: any) => {
-    if (sort === "recent") {
-      return (
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  /*
+   * Fetch all reviews for the products.
+   *
+   * We calculate the average rating and review count
+   * ourselves instead of expecting those values to exist
+   * inside the products table.
+   */
+  const productIds = (products || []).map(
+    (product: any) => product.product_id,
+  );
+
+  let reviews: any[] = [];
+
+  if (productIds.length > 0) {
+    const { data: reviewsData, error: reviewsError } =
+      await supabase
+        .from("reviews")
+        .select("product_id, rating")
+        .in("product_id", productIds);
+
+    if (reviewsError) {
+      console.error(
+        "Error fetching reviews:",
+        reviewsError.message,
       );
+    } else {
+      reviews = reviewsData || [];
     }
+  }
 
-    if (sort === "price_asc") {
-      return a.price - b.price;
+  /*
+   * Calculate rating information for every product.
+   */
+  const ratingMap = new Map<
+    number,
+    {
+      average: number;
+      count: number;
     }
+  >();
 
-    if (sort === "price_desc") {
-      return b.price - a.price;
-    }
+  for (const review of reviews) {
+    const productId = Number(review.product_id);
+    const rating = Number(review.rating);
 
-    if (sort === "top_rated") {
-      if (b.rating === a.rating) {
+    const current = ratingMap.get(productId) || {
+      average: 0,
+      count: 0,
+    };
+
+    current.average += rating;
+    current.count += 1;
+
+    ratingMap.set(productId, current);
+  }
+
+  /*
+   * Add the calculated rating information to every product.
+   */
+  const productsWithRatings = (products || []).map(
+    (product: any) => {
+      const ratingInfo = ratingMap.get(
+        Number(product.product_id),
+      );
+
+      const reviewCount = ratingInfo?.count || 0;
+
+      const averageRating =
+        reviewCount > 0
+          ? ratingInfo!.average / reviewCount
+          : 0;
+
+      return {
+        ...product,
+        rating: averageRating,
+        review_count: reviewCount,
+      };
+    },
+  );
+
+  /*
+   * Sort products.
+   */
+  const sortedProducts = [...productsWithRatings].sort(
+    (a: any, b: any) => {
+      if (sort === "recent") {
+        return (
+          new Date(b.created_at).getTime() -
+          new Date(a.created_at).getTime()
+        );
+      }
+
+      if (sort === "price_asc") {
+        return Number(a.price) - Number(b.price);
+      }
+
+      if (sort === "price_desc") {
+        return Number(b.price) - Number(a.price);
+      }
+
+      if (sort === "top_rated") {
+        /*
+         * First compare average rating.
+         */
+        if (b.rating !== a.rating) {
+          return b.rating - a.rating;
+        }
+
+        /*
+         * If the average is equal, products with
+         * more reviews come first.
+         */
         return b.review_count - a.review_count;
       }
 
-      return b.rating - a.rating;
-    }
-
-    return 0;
-  });
+      return 0;
+    },
+  );
 
   return (
-    <div className="container" style={{ marginTop: "30px" }}>
+    <div
+      className="container"
+      style={{ marginTop: "30px" }}
+    >
       <h1
         className={poppins.className}
         style={{
@@ -113,7 +220,8 @@ export default async function CatalogPage({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+          gridTemplateColumns:
+            "repeat(auto-fill, minmax(280px, 1fr))",
           gap: "30px",
         }}
       >
@@ -124,7 +232,8 @@ export default async function CatalogPage({
             <div
               key={product.product_id}
               style={{
-                border: "1px solid var(--secondary-color)",
+                border:
+                  "1px solid var(--secondary-color)",
                 borderRadius: "15px",
                 overflow: "hidden",
                 backgroundColor: "white",
@@ -133,7 +242,8 @@ export default async function CatalogPage({
               <div
                 style={{
                   height: "200px",
-                  backgroundColor: "var(--secondary-color)",
+                  backgroundColor:
+                    "var(--secondary-color)",
                 }}
               >
                 {product.image_url && (
@@ -150,7 +260,9 @@ export default async function CatalogPage({
               </div>
 
               <div style={{ padding: "20px" }}>
-                <Link href={`/product/${product.product_id}`}>
+                <Link
+                  href={`/product/${product.product_id}`}
+                >
                   <h3
                     className={poppins.className}
                     style={{
@@ -169,13 +281,16 @@ export default async function CatalogPage({
                     fontWeight: "bold",
                   }}
                 >
-                  By: {product.users?.first_name || "Vendedor"}
+                  By:{" "}
+                  {product.users?.first_name ||
+                    "Vendedor"}
                 </Link>
 
                 <div
                   style={{
                     display: "flex",
-                    justifyContent: "space-between",
+                    justifyContent:
+                      "space-between",
                     marginTop: "15px",
                     alignItems: "center",
                   }}
@@ -186,7 +301,7 @@ export default async function CatalogPage({
                       fontWeight: "bold",
                     }}
                   >
-                    ${product.price}
+                    ${Number(product.price).toFixed(2)}
                   </span>
 
                   <span
@@ -195,8 +310,16 @@ export default async function CatalogPage({
                       fontSize: "0.9rem",
                     }}
                   >
-                    ★ {product.rating || 0} ({product.review_count || 0}{" "}
-                    ratings)
+                    ★{" "}
+                    {product.review_count > 0
+                      ? product.rating.toFixed(1)
+                      : "0.0"}{" "}
+                    (
+                    {product.review_count}{" "}
+                    {product.review_count === 1
+                      ? "review"
+                      : "reviews"}
+                    )
                   </span>
                 </div>
               </div>
@@ -207,4 +330,3 @@ export default async function CatalogPage({
     </div>
   );
 }
-
