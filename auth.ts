@@ -16,25 +16,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        // Buscamos al usuario en la tabla real de Supabase, no en un mock.
         const { data: user, error } = await supabase
           .from("users")
           .select("user_id, username, first_name, last_name, role, password")
           .eq("username", credentials.username)
-          .single();
+          .maybeSingle();
 
-        if (error || !user || !user.password) {
-          return null;
+        if (error || !user) {
+          throw new Error("USER_NOT_FOUND");
         }
 
-        // Comparamos la contraseña ingresada contra el hash guardado en la BD.
+        if (!user.password) {
+          throw new Error("INVALID_PASSWORD");
+        }
+
         const passwordMatches = await bcrypt.compare(
           credentials.password as string,
           user.password,
         );
 
         if (!passwordMatches) {
-          return null;
+          throw new Error("INVALID_PASSWORD");
         }
 
         return {
