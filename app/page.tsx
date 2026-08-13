@@ -7,10 +7,11 @@ export default function Page() {
       <section className={styles.heroSection}>
         <Image
           src="/landing.jpg"
-          loading="eager"
           alt="Handcrafted Haven marketplace"
           width={1200}
           height={600}
+          sizes="100vw"
+          priority
           className={styles.heroImage}
         />
 
@@ -26,10 +27,14 @@ export default function Page() {
             alt="Artisan working on a handcrafted product"
             width={1200}
             height={1000}
+            sizes="(max-width: 768px) 100vw, 500px"
+            priority
             className={styles.sectionImage}
           />
 
-          <div className={`${styles.description} ${styles.descriptionRight}`}>
+          <div
+            className={`${styles.description} ${styles.descriptionRight}`}
+          >
             <h2>Who We Are?</h2>
 
             <p>
@@ -44,7 +49,9 @@ export default function Page() {
         </section>
 
         <section className={styles.left}>
-          <div className={`${styles.description} ${styles.descriptionLeft}`}>
+          <div
+            className={`${styles.description} ${styles.descriptionLeft}`}
+          >
             <h2>What We Do?</h2>
 
             <p>
@@ -62,6 +69,7 @@ export default function Page() {
             alt="Handcrafted products"
             width={1200}
             height={1000}
+            sizes="(max-width: 768px) 100vw, 500px"
             className={styles.sectionImage}
           />
         </section>
