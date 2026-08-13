@@ -11,7 +11,6 @@ export default function Page() {
           width={1200}
           height={600}
           sizes="100vw"
-          priority
           className={styles.heroImage}
         />
 
